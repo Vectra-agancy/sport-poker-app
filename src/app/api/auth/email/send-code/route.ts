@@ -58,6 +58,18 @@ export async function POST(req: Request) {
   try {
     await sendOtpEmail({ to: email, code, ttlMinutes: OTP_TTL_MINUTES });
   } catch (err) {
+    if (process.env.NODE_ENV !== "production") {
+      // Keep dev unblocked when Resend rejects (e.g. unverified domain).
+      console.warn(
+        `[auth/email/send-code] Resend failed in dev — code for ${email}: ${code}`,
+        err
+      );
+      return NextResponse.json({
+        ok: true,
+        ttlMinutes: OTP_TTL_MINUTES,
+        devNote: "Resend failed; code printed in server logs",
+      });
+    }
     console.error("[auth/email/send-code] send failed", err);
     return NextResponse.json({ error: "send_failed" }, { status: 502 });
   }

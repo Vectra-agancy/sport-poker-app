@@ -1,27 +1,29 @@
-"use client";
-
-import { useState } from "react";
-import { ChevronDown, Flame, Layers, Share2 } from "lucide-react";
+import { Flame, Share2 } from "lucide-react";
 import { Header } from "@/widgets/header";
 import { TournamentParticipants } from "@/widgets/tournament-participants";
 import { TournamentRegisterCta } from "@/features/tournament-register";
 import {
-  BlindStructureTable,
-  MOCK_BLIND_STRUCTURE,
-  MOCK_PARTICIPANTS,
   TournamentTypeBadge,
+  type BlindLevel,
   type Tournament,
 } from "@/entities/tournament";
 import { cn } from "@/shared/lib/utils";
+import { CollapsibleStructure } from "./CollapsibleStructure";
 
 export interface TournamentDetailPageProps {
   tournament: Tournament;
+  blinds: BlindLevel[];
+  participants: string[];
+  isRegistered: boolean;
 }
 
-export function TournamentDetailPage({ tournament }: TournamentDetailPageProps) {
-  const [showStructure, setShowStructure] = useState(false);
+export function TournamentDetailPage({
+  tournament,
+  blinds,
+  participants,
+  isRegistered,
+}: TournamentDetailPageProps) {
   const t = tournament;
-
   return (
     <div className="pb-44">
       <Header title="Событие" showBack />
@@ -51,30 +53,7 @@ export function TournamentDetailPage({ tournament }: TournamentDetailPageProps) 
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setShowStructure((s) => !s)}
-          className="w-full rounded-2xl bg-burgundy-800/80 border border-amber-900/20 p-4 active:scale-[0.99] transition"
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Layers className="w-5 h-5 text-amber-400" />
-              <span className="text-white font-bold">Структура турнира</span>
-            </div>
-            <ChevronDown
-              className={cn(
-                "w-5 h-5 text-amber-400 transition-transform",
-                showStructure && "rotate-180"
-              )}
-            />
-          </div>
-        </button>
-
-        {showStructure && (
-          <div className="rounded-2xl bg-burgundy-800/80 border border-amber-900/20 p-4 -mt-2 animate-fade-in">
-            <BlindStructureTable levels={MOCK_BLIND_STRUCTURE} />
-          </div>
-        )}
+        {blinds.length > 0 && <CollapsibleStructure blinds={blinds} />}
 
         <div className="rounded-2xl bg-gradient-to-br from-rose-900/30 to-rose-950/30 border border-rose-700/30 p-5">
           <h3 className="text-rose-300 font-bold mb-3 flex items-center gap-2">
@@ -88,7 +67,7 @@ export function TournamentDetailPage({ tournament }: TournamentDetailPageProps) 
         </div>
 
         <TournamentParticipants
-          participants={MOCK_PARTICIPANTS}
+          participants={participants}
           maxSeats={t.maxSeats}
         />
 
@@ -101,7 +80,10 @@ export function TournamentDetailPage({ tournament }: TournamentDetailPageProps) 
         </button>
       </div>
 
-      <TournamentRegisterCta tournamentId={t.id} />
+      <TournamentRegisterCta
+        tournamentId={t.id}
+        initialRegistered={isRegistered}
+      />
     </div>
   );
 }

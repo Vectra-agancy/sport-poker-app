@@ -1,1 +1,1 @@
-export { ProfilePage } from "./ui/ProfilePage";
+export { ProfilePage, ProfilePageAnonymous } from "./ui/ProfilePage";

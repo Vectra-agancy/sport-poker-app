@@ -3,11 +3,15 @@ import { AchievementsGrid } from "@/widgets/achievements-grid";
 import { ReferralCard } from "@/widgets/referral-card";
 import { RatingChart } from "@/widgets/rating-chart";
 import { BindEmailForm } from "@/features/bind-email";
-import { MOCK_ACHIEVEMENTS } from "@/entities/achievement";
-import { MOCK_CURRENT_USER, TIER_LABELS, UserAvatar } from "@/entities/user";
+import type { Achievement } from "@/entities/achievement";
+import { TIER_LABELS, UserAvatar, type CurrentUser } from "@/entities/user";
 
-export function ProfilePage() {
-  const user = MOCK_CURRENT_USER;
+export interface ProfilePageProps {
+  user: CurrentUser;
+  achievements: Achievement[];
+}
+
+export function ProfilePage({ user, achievements }: ProfilePageProps) {
   return (
     <div className="pb-28">
       <Header title="Профиль" />
@@ -16,11 +20,10 @@ export function ProfilePage() {
           <div className="flex items-center gap-4 mb-5">
             <UserAvatar name={user.nickname} size="xl" />
             <div className="flex-1">
-              <div className="text-white font-bold text-xl">
-                {user.nickname}
-              </div>
+              <div className="text-white font-bold text-xl">{user.nickname}</div>
               <div className="text-amber-200/60 text-sm">
-                {TIER_LABELS[user.tier]} • #{user.ratingPosition} в рейтинге
+                {TIER_LABELS[user.tier]}
+                {user.ratingPosition > 0 && ` • #${user.ratingPosition} в рейтинге`}
               </div>
             </div>
           </div>
@@ -46,9 +49,9 @@ export function ProfilePage() {
           <div className="grid grid-cols-2 gap-2">
             {[
               { label: "ITM%", value: `${user.itm}%` },
-              { label: "Среднее место", value: `${user.averageFinish}` },
-              { label: "Топ-3 финиши", value: `${user.topThreeFinishes}` },
-              { label: "Победы", value: `${user.wins}` },
+              { label: "Среднее место", value: user.averageFinish.toString() },
+              { label: "Топ-3 финиши", value: user.topThreeFinishes.toString() },
+              { label: "Победы", value: user.wins.toString() },
             ].map((s) => (
               <div
                 key={s.label}
@@ -62,7 +65,7 @@ export function ProfilePage() {
         </div>
 
         <RatingChart delta={340} rangeLabel="30 дней" />
-        <AchievementsGrid achievements={MOCK_ACHIEVEMENTS} />
+        <AchievementsGrid achievements={achievements} />
         <ReferralCard
           user={{
             freeTickets: user.freeTickets,
@@ -70,6 +73,28 @@ export function ProfilePage() {
             refereesGamesPlayed: user.refereesGamesPlayed,
           }}
         />
+        {!user.email && <BindEmailForm />}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Logged-out variant: just the email-bind form so an anonymous visitor can
+ * still sign in from this screen. No /login page yet.
+ */
+export function ProfilePageAnonymous() {
+  return (
+    <div className="pb-28">
+      <Header title="Профиль" />
+      <div className="px-4 space-y-4">
+        <div className="rounded-2xl bg-gradient-to-br from-amber-900/20 to-rose-900/20 border border-amber-700/30 p-5">
+          <h2 className="text-white font-bold text-lg mb-2">Войдите в клуб</h2>
+          <p className="text-amber-100/70 text-sm">
+            Откройте приложение через Telegram или подтвердите email — после
+            входа здесь будут ваш профиль, статистика и достижения.
+          </p>
+        </div>
         <BindEmailForm />
       </div>
     </div>

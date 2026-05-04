@@ -32,3 +32,10 @@ export interface TournamentTypeMeta {
   label: string;
   className: string;
 }
+
+export interface MyRegistrationSummary {
+  tournamentId: number;
+  name: string;
+  startsAt: Date;
+  status: string;
+}

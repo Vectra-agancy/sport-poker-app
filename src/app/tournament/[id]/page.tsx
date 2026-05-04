@@ -1,21 +1,49 @@
 import { notFound } from "next/navigation";
 import { TournamentDetailPage } from "@/views/tournament-detail";
 import { BottomNav } from "@/widgets/bottom-nav";
-import { getTournamentById } from "@/entities/tournament";
+import {
+  getBlindStructure,
+  getTournamentById,
+  getTournamentParticipants,
+  getUserRegistrationOnTournament,
+} from "@/entities/tournament/server";
+import { getCurrentUser } from "@/shared/lib/auth-helpers";
 
 interface PageProps {
   params: { id: string };
 }
 
-export default function Page({ params }: PageProps) {
+export default async function Page({ params }: PageProps) {
   const id = Number(params.id);
   if (Number.isNaN(id)) notFound();
-  const tournament = getTournamentById(id);
+
+  const tournament = await getTournamentById(id);
   if (!tournament) notFound();
+
+  const [blinds, participants, sessionUser] = await Promise.all([
+    getBlindStructure(id),
+    getTournamentParticipants(id),
+    getCurrentUser(),
+  ]);
+
+  let isRegistered = false;
+  if (sessionUser) {
+    const reg = await getUserRegistrationOnTournament(
+      Number(sessionUser.id),
+      id
+    );
+    isRegistered =
+      reg?.status === "registered" || reg?.status === "waitlist";
+  }
 
   return (
     <>
-      <TournamentDetailPage tournament={tournament} />
+      <TournamentDetailPage
+        tournament={tournament}
+        blinds={blinds}
+        participants={participants}
+        isRegistered={isRegistered}
+      />
       <BottomNav />
     </>
   );

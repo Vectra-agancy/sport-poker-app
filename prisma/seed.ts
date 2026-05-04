@@ -198,7 +198,9 @@ async function main() {
     {
       name: "Ultra Bounty",
       type: "bounty",
-      startsAt: new Date("2026-05-03T17:00:00"),
+      // All startsAt values are stored as UTC. UI maps via UTC components,
+      // so the displayed time matches whatever's written here.
+      startsAt: new Date("2026-05-03T17:00:00Z"),
       maxSeats: 60,
       startStack: 30000,
       ticketPrice: 1500,
@@ -210,7 +212,7 @@ async function main() {
     {
       name: "No raise",
       type: "no_raise",
-      startsAt: new Date("2026-05-04T19:00:00"),
+      startsAt: new Date("2026-05-04T19:00:00Z"),
       maxSeats: 60,
       startStack: 25000,
       ticketPrice: 1000,
@@ -221,7 +223,7 @@ async function main() {
     {
       name: "Amateur tournament",
       type: "amateur",
-      startsAt: new Date("2026-05-05T19:00:00"),
+      startsAt: new Date("2026-05-05T19:00:00Z"),
       maxSeats: 40,
       startStack: 20000,
       ticketPrice: 800,
@@ -232,7 +234,7 @@ async function main() {
     {
       name: "Freezeout Classic",
       type: "freezeout",
-      startsAt: new Date("2026-05-06T20:00:00"),
+      startsAt: new Date("2026-05-06T20:00:00Z"),
       maxSeats: 50,
       startStack: 35000,
       ticketPrice: 1200,

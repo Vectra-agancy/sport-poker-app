@@ -1,3 +1,4 @@
+// Client-safe public API. Server-only queries are in `./server`.
 export type { User, CurrentUser, Tier } from "./model/types";
-export { MOCK_CURRENT_USER, TIER_LABELS } from "./api/mock";
+export { TIER_LABELS } from "./model/labels";
 export { UserAvatar } from "./ui/UserAvatar";
