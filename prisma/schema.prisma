@@ -1,0 +1,282 @@
+// RERAISE CLUB — Prisma schema
+// SQLite for dev, PostgreSQL для prod (поменять provider при переезде).
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// ─────────────────────────────────────────────────────────
+// Перечисления (SQLite enums эмулируются строками)
+// ─────────────────────────────────────────────────────────
+
+// TournamentType: bounty | no_raise | amateur | freezeout
+// TournamentStatus: scheduled | in_progress | finished | cancelled
+// RegistrationStatus: registered | waitlist | attended | cancelled | no_show
+// AchievementCategory: rare | result | participation
+// Tier: bronze | silver | gold | platinum
+// RatingScope: global | season
+
+// ─────────────────────────────────────────────────────────
+// User
+// ─────────────────────────────────────────────────────────
+
+model User {
+  id              Int      @id @default(autoincrement())
+  telegramId      String?  @unique
+  email           String?  @unique
+  emailVerified   DateTime?
+  nickname        String   @unique
+  avatarUrl       String?
+  tier            String   @default("bronze") // bronze | silver | gold | platinum
+  isAdmin         Boolean  @default(false)
+  notifyTelegram  Boolean  @default(true)
+  notifyEmail     Boolean  @default(false)
+
+  // Реферальная программа
+  referralCode    String   @unique
+  referredById    Int?
+  referredBy      User?    @relation("UserReferrals", fields: [referredById], references: [id])
+  referrals       User[]   @relation("UserReferrals")
+
+  freeTickets     Int      @default(0)
+
+  // Связи
+  registrations       Registration[]
+  achievements        UserAchievement[]
+  tournamentResults   TournamentResult[]
+  ratingSnapshots     RatingSnapshot[]
+  followers           Follow[]            @relation("UserFollowers")
+  following           Follow[]            @relation("UserFollowing")
+  referralProgress    ReferralProgress[]  @relation("Referrer")
+  refereeProgress     ReferralProgress?   @relation("Referee")
+  createdTournaments  Tournament[]        @relation("TournamentCreator")
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([nickname])
+  @@index([telegramId])
+}
+
+// ─────────────────────────────────────────────────────────
+// Season
+// ─────────────────────────────────────────────────────────
+
+model Season {
+  id          Int      @id @default(autoincrement())
+  name        String
+  slug        String   @unique
+  startDate   DateTime
+  endDate     DateTime
+  isActive    Boolean  @default(false)
+
+  tournaments     Tournament[]
+  ratingSnapshots RatingSnapshot[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ─────────────────────────────────────────────────────────
+// Tournament
+// ─────────────────────────────────────────────────────────
+
+model Tournament {
+  id              Int      @id @default(autoincrement())
+  name            String
+  type            String   // bounty | no_raise | amateur | freezeout
+  status          String   @default("scheduled") // scheduled | in_progress | finished | cancelled
+  startsAt        DateTime
+  location        String   @default("Кожевенная линия, 30, Лофт Brosko")
+  maxSeats        Int
+  startStack      Int
+  ticketPrice     Int      // в рублях
+  guarantee       Int?
+  format          String?  // описание формата
+
+  seasonId        Int?
+  season          Season?  @relation(fields: [seasonId], references: [id], onDelete: SetNull)
+
+  createdById     Int?
+  createdBy       User?    @relation("TournamentCreator", fields: [createdById], references: [id], onDelete: SetNull)
+
+  levels          TournamentLevel[]
+  registrations   Registration[]
+  results         TournamentResult[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([startsAt])
+  @@index([status])
+  @@index([seasonId])
+}
+
+// ─────────────────────────────────────────────────────────
+// TournamentLevel — структура блайндов
+// ─────────────────────────────────────────────────────────
+
+model TournamentLevel {
+  id            Int      @id @default(autoincrement())
+  tournamentId  Int
+  tournament    Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+
+  level         Int      // порядковый номер уровня
+  smallBlind    Int      @default(0)
+  bigBlind      Int      @default(0)
+  ante          Int      @default(0)
+  durationMin   Int
+  isBreak       Boolean  @default(false)
+
+  @@unique([tournamentId, level])
+  @@index([tournamentId])
+}
+
+// ─────────────────────────────────────────────────────────
+// Registration — запись на турнир
+// ─────────────────────────────────────────────────────────
+
+model Registration {
+  id            Int      @id @default(autoincrement())
+  userId        Int
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tournamentId  Int
+  tournament    Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+
+  status        String   @default("registered") // registered | waitlist | attended | cancelled | no_show
+  usedFreeTicket Boolean @default(false)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  cancelledAt   DateTime?
+
+  @@unique([userId, tournamentId])
+  @@index([tournamentId, status])
+  @@index([userId, status])
+}
+
+// ─────────────────────────────────────────────────────────
+// Achievement — каталог достижений
+// ─────────────────────────────────────────────────────────
+
+model Achievement {
+  id           Int      @id @default(autoincrement())
+  code         String   @unique
+  icon         String
+  title        String
+  description  String
+  category     String   // rare | result | participation
+  isManual     Boolean  @default(false) // true = выдаётся вручную админом
+
+  unlockedBy   UserAchievement[]
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+// ─────────────────────────────────────────────────────────
+// UserAchievement — разблокированные достижения
+// ─────────────────────────────────────────────────────────
+
+model UserAchievement {
+  id             Int      @id @default(autoincrement())
+  userId         Int
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievementId  Int
+  achievement    Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  unlockedAt     DateTime @default(now())
+  shownToUser    Boolean  @default(false) // для анимации при следующем входе
+
+  @@unique([userId, achievementId])
+  @@index([userId])
+}
+
+// ─────────────────────────────────────────────────────────
+// Follow — подписки
+// ─────────────────────────────────────────────────────────
+
+model Follow {
+  id            Int      @id @default(autoincrement())
+  followerId    Int
+  follower      User     @relation("UserFollowing", fields: [followerId], references: [id], onDelete: Cascade)
+  followingId   Int
+  following     User     @relation("UserFollowers", fields: [followingId], references: [id], onDelete: Cascade)
+
+  createdAt     DateTime @default(now())
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+}
+
+// ─────────────────────────────────────────────────────────
+// ReferralProgress — прогресс реферала
+// ─────────────────────────────────────────────────────────
+
+model ReferralProgress {
+  id                  Int   @id @default(autoincrement())
+  referrerId          Int
+  referrer            User  @relation("Referrer", fields: [referrerId], references: [id], onDelete: Cascade)
+  refereeId           Int   @unique
+  referee             User  @relation("Referee", fields: [refereeId], references: [id], onDelete: Cascade)
+
+  attendedTournaments Int   @default(0)
+  ticketsAwarded      Int   @default(0)
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([referrerId])
+}
+
+// ─────────────────────────────────────────────────────────
+// RatingSnapshot — ежедневный снимок позиций
+// ─────────────────────────────────────────────────────────
+
+model RatingSnapshot {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  scope       String   // global | season
+  seasonId    Int?
+  season      Season?  @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+
+  position    Int
+  points      Int
+  bounties    Int      @default(0)
+
+  takenAt     DateTime @default(now())
+
+  @@index([takenAt])
+  @@index([userId, takenAt])
+  @@index([scope, seasonId, takenAt])
+}
+
+// ─────────────────────────────────────────────────────────
+// TournamentResult — итоги турнира
+// ─────────────────────────────────────────────────────────
+
+model TournamentResult {
+  id            Int      @id @default(autoincrement())
+  tournamentId  Int
+  tournament    Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  userId        Int
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  place         Int
+  bountiesCount Int      @default(0)
+  pointsAwarded Int      @default(0)
+
+  createdAt     DateTime @default(now())
+
+  @@unique([tournamentId, userId])
+  @@index([tournamentId, place])
+  @@index([userId])
+}

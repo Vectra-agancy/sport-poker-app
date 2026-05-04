@@ -26,6 +26,7 @@ yarn-debug.log*
 yarn-error.log*
 
 # local env files
+.env
 .env*.local
 
 # vercel
@@ -34,3 +35,15 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# prisma — generated client and local SQLite artifacts
+# (NB: prisma/migrations/ и prisma/schema.prisma коммитим)
+/src/generated
+prisma/*.db
+prisma/*.db-journal
+prisma/*.db-wal
+prisma/*.db-shm
+/dev.db
+/dev.db-journal
+/dev.db-wal
+/dev.db-shm
