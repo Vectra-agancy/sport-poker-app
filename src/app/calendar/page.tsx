@@ -1,10 +1,10 @@
-import { HomePage } from "@/views/home";
+import { CalendarPage } from "@/views/calendar";
 import { BottomNav } from "@/widgets/bottom-nav";
 
 export default function Page() {
   return (
     <>
-      <HomePage />
+      <CalendarPage />
       <BottomNav />
     </>
   );
