@@ -15,6 +15,7 @@ export interface TournamentDetailPageProps {
   blinds: BlindLevel[];
   participants: string[];
   isRegistered: boolean;
+  isWaitlist: boolean;
 }
 
 export function TournamentDetailPage({
@@ -22,6 +23,7 @@ export function TournamentDetailPage({
   blinds,
   participants,
   isRegistered,
+  isWaitlist,
 }: TournamentDetailPageProps) {
   const t = tournament;
   return (
@@ -83,6 +85,7 @@ export function TournamentDetailPage({
       <TournamentRegisterCta
         tournamentId={t.id}
         initialRegistered={isRegistered}
+        initialWaitlist={isWaitlist}
       />
     </div>
   );

@@ -27,6 +27,7 @@ export default async function Page({ params }: PageProps) {
   ]);
 
   let isRegistered = false;
+  let isWaitlist = false;
   if (sessionUser) {
     const reg = await getUserRegistrationOnTournament(
       Number(sessionUser.id),
@@ -34,6 +35,7 @@ export default async function Page({ params }: PageProps) {
     );
     isRegistered =
       reg?.status === "registered" || reg?.status === "waitlist";
+    isWaitlist = reg?.status === "waitlist";
   }
 
   return (
@@ -43,6 +45,7 @@ export default async function Page({ params }: PageProps) {
         blinds={blinds}
         participants={participants}
         isRegistered={isRegistered}
+        isWaitlist={isWaitlist}
       />
       <BottomNav />
     </>
