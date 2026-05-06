@@ -33,7 +33,11 @@ export default async function Page() {
 
   return (
     <>
-      <ProfilePage user={user} achievements={achievements} />
+      <ProfilePage
+        user={user}
+        achievements={achievements}
+        isAdmin={sessionUser.isAdmin}
+      />
       <BottomNav />
     </>
   );

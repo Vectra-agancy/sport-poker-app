@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { Shield } from "lucide-react";
 import { Header } from "@/widgets/header";
 import { AchievementsGrid } from "@/widgets/achievements-grid";
 import { ReferralCard } from "@/widgets/referral-card";
@@ -9,13 +11,33 @@ import { TIER_LABELS, UserAvatar, type CurrentUser } from "@/entities/user";
 export interface ProfilePageProps {
   user: CurrentUser;
   achievements: Achievement[];
+  isAdmin?: boolean;
 }
 
-export function ProfilePage({ user, achievements }: ProfilePageProps) {
+export function ProfilePage({ user, achievements, isAdmin }: ProfilePageProps) {
   return (
     <div className="pb-28">
       <Header title="Профиль" />
       <div className="px-4 space-y-4">
+        {isAdmin && (
+          <Link
+            href="/admin"
+            className="flex items-center justify-between rounded-2xl bg-gradient-to-r from-amber-700/40 to-amber-900/40 border border-amber-600/40 p-4 active:scale-[0.99] transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-900/40 border border-amber-600/40 flex items-center justify-center">
+                <Shield className="w-5 h-5 text-amber-300" />
+              </div>
+              <div>
+                <div className="text-white font-bold">Админ-панель</div>
+                <div className="text-xs text-amber-200/70">
+                  Управление турнирами и результатами
+                </div>
+              </div>
+            </div>
+            <span className="text-amber-300 text-lg">→</span>
+          </Link>
+        )}
         <div className="rounded-2xl bg-gradient-to-br from-burgundy-700 to-burgundy-800 border border-amber-900/30 p-5">
           <div className="flex items-center gap-4 mb-5">
             <UserAvatar name={user.nickname} size="xl" />
