@@ -24,14 +24,18 @@ export function TelegramAuthBridge({
   isAuthenticated,
 }: TelegramAuthBridgeProps) {
   const router = useRouter();
+  const initRef = useRef(false);
   const triedRef = useRef(false);
 
   useEffect(() => {
     const webApp = window.Telegram?.WebApp;
     if (!webApp) return;
 
-    webApp.ready();
-    webApp.expand();
+    if (!initRef.current) {
+      initRef.current = true;
+      webApp.ready();
+      webApp.expand();
+    }
 
     if (isAuthenticated || triedRef.current) return;
     if (!webApp.initData) return;

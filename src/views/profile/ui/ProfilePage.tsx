@@ -5,6 +5,7 @@ import { AchievementsGrid } from "@/widgets/achievements-grid";
 import { ReferralCard } from "@/widgets/referral-card";
 import { RatingChart } from "@/widgets/rating-chart";
 import { BindEmailForm } from "@/features/bind-email";
+import { ChangeNicknameDialog } from "@/features/change-nickname";
 import type { Achievement } from "@/entities/achievement";
 import { TIER_LABELS, UserAvatar, type CurrentUser } from "@/entities/user";
 
@@ -41,8 +42,13 @@ export function ProfilePage({ user, achievements, isAdmin }: ProfilePageProps) {
         <div className="rounded-2xl bg-gradient-to-br from-burgundy-700 to-burgundy-800 border border-amber-900/30 p-5">
           <div className="flex items-center gap-4 mb-5">
             <UserAvatar name={user.nickname} size="xl" />
-            <div className="flex-1">
-              <div className="text-white font-bold text-xl">{user.nickname}</div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <div className="text-white font-bold text-xl truncate">
+                  {user.nickname}
+                </div>
+                <ChangeNicknameDialog currentNickname={user.nickname} />
+              </div>
               <div className="text-amber-200/60 text-sm">
                 {TIER_LABELS[user.tier]}
                 {user.ratingPosition > 0 && ` • #${user.ratingPosition} в рейтинге`}

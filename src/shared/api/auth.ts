@@ -194,13 +194,21 @@ export const {
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
       if (user) {
         token.userId = Number(user.id);
         token.nickname = user.name ?? undefined;
+        token.lastSync = 0;
       }
-      // Refresh user profile on every JWT cycle (cheap query, keeps tier/avatar fresh)
-      if (typeof token.userId === "number") {
+      // Refresh user profile from DB at most every 60s, or on explicit update
+      // (e.g. after nickname change). Avoids a Prisma roundtrip on every server
+      // navigation, which makes Mini App feel sluggish.
+      const REFRESH_INTERVAL_MS = 60_000;
+      const now = Date.now();
+      const lastSync = (token.lastSync as number | undefined) ?? 0;
+      const shouldRefresh =
+        trigger === "update" || now - lastSync > REFRESH_INTERVAL_MS;
+      if (typeof token.userId === "number" && shouldRefresh) {
         const dbUser = await prisma.user.findUnique({
           where: { id: token.userId },
           select: {
@@ -217,6 +225,7 @@ export const {
           token.avatarUrl = dbUser.avatarUrl;
           token.isAdmin = dbUser.isAdmin;
           token.userEmail = dbUser.email ?? null;
+          token.lastSync = now;
         }
       }
       return token;
