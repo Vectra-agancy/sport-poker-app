@@ -1,5 +1,8 @@
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import "./globals.css";
+import { auth } from "@/shared/api/auth";
+import { TelegramAuthBridge } from "@/widgets/telegram-auth-bridge";
 
 export const metadata: Metadata = {
   title: "RERAISE CLUB",
@@ -15,14 +18,22 @@ export const viewport: Viewport = {
   maximumScale: 1,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await auth();
+  const isAuthenticated = Boolean(session?.user);
+
   return (
     <html lang="ru">
       <body className="min-h-screen text-white antialiased">
+        <Script
+          src="https://telegram.org/js/telegram-web-app.js"
+          strategy="beforeInteractive"
+        />
+        <TelegramAuthBridge isAuthenticated={isAuthenticated} />
         <div
           className="fixed inset-0 -z-20"
           style={{

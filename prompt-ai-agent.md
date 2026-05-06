@@ -909,25 +909,25 @@ export default function ReraiseClub() {
 ## Что нужно доделать (TODO для AI-агента)
 
 ### 🔴 Критично (MVP)
-- [ ] Инициализировать Next.js 14 проект с FSD-структурой папок (см. выше)
-- [ ] Настроить shadcn/ui: `npx shadcn@latest init`, добавить базовые компоненты (button, card, dialog, sheet, tabs, input, select, toast, skeleton, avatar, badge, progress, separator, drawer)
-- [ ] Кастомизировать CSS-переменные shadcn в `globals.css` под бордово-золотую тему
-- [ ] Настроить ESLint-правила для запрета импортов вверх по слоям FSD (можно `eslint-plugin-boundaries` или `@feature-sliced/eslint-config`)
-- [ ] Перенести JSX-прототип в Next.js проект, разбив на компоненты по mapping выше
-- [ ] Настроить Prisma + SQLite со всеми моделями из PRD (User, Tournament, TournamentLevel, Registration, Season, Achievement, UserAchievement, Follow, ReferralProgress, RatingSnapshot, TournamentResult)
-- [ ] Реализовать NextAuth.js v5: провайдер Telegram (валидация InitData) + Email OTP через Resend
-- [ ] Заменить моки на реальные API-запросы (Server Actions или Route Handlers) в `entities/*/api/`
-- [ ] Создать API-эндпоинты для всех CRUD-операций турниров и регистраций
-- [ ] Реализовать запись на турнир / отмену с проверкой пересечений по времени (feature `tournament-register`)
-- [ ] Реализовать админ-панель (`/admin`): создание турниров, ввод результатов, выдача ручных достижений
+- [x] Инициализировать Next.js 14 проект с FSD-структурой папок (см. выше)
+- [~] Настроить shadcn/ui: `npx shadcn@latest init`, добавить базовые компоненты (button, card, dialog, sheet, tabs, input, select, toast, skeleton, avatar, badge, progress, separator, drawer) — установлены: button, card, dialog, tabs, input, skeleton, avatar, badge, progress, separator, scroll-area; **не хватает: sheet, select, toast, drawer**
+- [x] Кастомизировать CSS-переменные shadcn в `globals.css` под бордово-золотую тему
+- [x] Настроить ESLint-правила для запрета импортов вверх по слоям FSD (можно `eslint-plugin-boundaries` или `@feature-sliced/eslint-config`)
+- [x] Перенести JSX-прототип в Next.js проект, разбив на компоненты по mapping выше
+- [x] Настроить Prisma + SQLite со всеми моделями из PRD (User, Tournament, TournamentLevel, Registration, Season, Achievement, UserAchievement, Follow, ReferralProgress, RatingSnapshot, TournamentResult) — все модели на месте, БД мигрирована на Turso/libSQL
+- [x] Реализовать NextAuth.js v5: провайдер Telegram (валидация InitData) + Email OTP через Resend
+- [x] Заменить моки на реальные API-запросы (Server Actions или Route Handlers) в `entities/*/api/`
+- [ ] Создать API-эндпоинты для всех CRUD-операций турниров и регистраций — есть только Server Actions для `register`/`cancel`, CRUD турниров (create/update/delete) для админки отсутствует
+- [x] Реализовать запись на турнир / отмену с проверкой пересечений по времени (feature `tournament-register`) — `findOverlappingRegistration` + автопромоут из waitlist
+- [ ] Реализовать админ-панель (`/admin`): создание турниров, ввод результатов, выдача ручных достижений — папка `src/app/admin` отсутствует, флаг `User.isAdmin` есть, но UI/роуты не реализованы
 - [ ] Логика автоматических достижений (триггеры при сохранении TournamentResult)
 - [ ] Расчёт RatingSnapshot ежедневным cron-job (node-cron или systemd timer)
 
 ### 🟡 Социальные функции (Milestone 2)
-- [ ] Подписки на игроков (Follow) и страницы профилей других пользователей
-- [ ] Лента друзей с агрегацией событий из TournamentResult и UserAchievement
-- [ ] Фильтр "Друзья" в рейтинге (запрос по follow-связям текущего пользователя)
-- [ ] Стрелочки динамики позиции в рейтинге (сравнение текущего и недельного снимков)
+- [ ] Подписки на игроков (Follow) и страницы профилей других пользователей — модель `Follow` и `getFriendsFeed` используют follow-связи, но самой feature `follow-user/api` (server action подписки) и страниц профилей других пользователей нет
+- [x] Лента друзей с агрегацией событий из TournamentResult и UserAchievement — `getFriendsFeed` в `entities/rating/api/queries.ts`
+- [x] Фильтр "Друзья" в рейтинге (запрос по follow-связям текущего пользователя) — `getRating({ scope: "friends", viewerId })`
+- [ ] Стрелочки динамики позиции в рейтинге (сравнение текущего и недельного снимков) — `change` в `RatingRow` сейчас захардкожен в `0`
 
 ### 🟢 Достижения и рефералы (Milestone 3)
 - [ ] Реферальные ссылки `reraise.club/r/{code}` с обработкой первой регистрации
@@ -937,26 +937,26 @@ export default function ReraiseClub() {
 
 ### 🔵 Уведомления (Milestone 4)
 - [ ] Telegram-бот: напоминания за 24 часа и за 1 час до турнира
-- [ ] Уведомление при освобождении места из листа ожидания
-- [ ] Email-уведомления (Resend) для пользователей с привязанным email
-- [ ] Настройки уведомлений в профиле (переключатели типов)
+- [ ] Уведомление при освобождении места из листа ожидания (логика автопромоута есть, нотификации нет)
+- [~] Email-уведомления (Resend) для пользователей с привязанным email — Resend подключён, но используется только для OTP-кодов, не для напоминаний/нотификаций
+- [ ] Настройки уведомлений в профиле (переключатели типов) — поля `notifyTelegram`/`notifyEmail` в схеме есть, UI нет
 - [ ] Шаринг приглашения на турнир через Telegram Web App API (`window.Telegram.WebApp.openTelegramLink`)
 
 ### ⚪ Полировка
-- [ ] Skeleton loaders на всех экранах
+- [ ] Skeleton loaders на всех экранах (компонент `Skeleton` добавлен, но не подключён к страницам через `loading.tsx`)
 - [ ] Empty states (нет записей, нет подписок, нет достижений)
-- [ ] Обработка ошибок и toast-уведомления (sonner)
+- [ ] Обработка ошибок и toast-уведомления (sonner) — `sonner` не установлен, ошибки показываются inline-блоком в CTA
 - [ ] Telegram theme params: подхват цветовой схемы из Telegram при возможности
 - [ ] PWA-манифест для веб-версии
 - [ ] SEO-теги для публичных страниц
 - [ ] Локализация (i18n): русский основной, английский опционально
 
 ### 🐛 Известные нюансы прототипа, которые нужно учесть
-- В прототипе моки прописаны прямо в компоненте — заменить на Server Actions / запросы из `entities/*/api/`
-- Иконки достижений сейчас эмодзи — подумать про SVG-набор для премиальности
-- График динамики рейтинга — статический SVG, заменить на Recharts с реальными данными
-- Sticky CTA "Участвовать" должна менять текст на "Отменить участие" при `Registration.status = registered`
-- Все кастомные кнопки в прототипе (фильтры табов, основные CTA) — заменить на shadcn `Button` / `Tabs` / `ToggleGroup` с кастомными вариантами
+- [x] В прототипе моки прописаны прямо в компоненте — заменить на Server Actions / запросы из `entities/*/api/`
+- [ ] Иконки достижений сейчас эмодзи — подумать про SVG-набор для премиальности
+- [ ] График динамики рейтинга — статический SVG, заменить на Recharts с реальными данными (Recharts не установлен)
+- [x] Sticky CTA "Участвовать" должна менять текст на "Отменить участие" при `Registration.status = registered` — реализовано в `TournamentRegisterCta`, отдельно учитывает waitlist
+- [~] Все кастомные кнопки в прототипе (фильтры табов, основные CTA) — заменить на shadcn `Button` / `Tabs` / `ToggleGroup` с кастомными вариантами — частично: shadcn-обёртки есть, но многие табы/фильтры/CTA в `views/*` всё ещё кастомные
 - Inline-стили `style={{ background: '...' }}` в прототипе допустимы только для градиентов — остальное через Tailwind
 
 ### 📚 Связанные документы
