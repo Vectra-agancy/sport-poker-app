@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Crown, TrendingUp, Trophy, Users } from "lucide-react";
 import { Header } from "@/widgets/header";
 import { TournamentList } from "@/widgets/tournament-list";
@@ -86,15 +87,22 @@ export function HomePage({
           )}
         </section>
 
-        {friendsFeed.length > 0 && (
-          <section>
-            <div className="flex items-center gap-2 mb-3">
-              <Users className="w-5 h-5 text-amber-400" />
-              <h2 className="text-white font-bold text-lg">Лента друзей</h2>
-            </div>
+        <section>
+          <div className="flex items-center gap-2 mb-3">
+            <Users className="w-5 h-5 text-amber-400" />
+            <h2 className="text-white font-bold text-lg">Лента друзей</h2>
+          </div>
+          {friendsFeed.length > 0 ? (
             <FriendsFeed items={friendsFeed} />
-          </section>
-        )}
+          ) : (
+            <Link
+              href="/rating"
+              className="block rounded-2xl bg-burgundy-800/60 border border-amber-900/20 p-6 text-center text-amber-200/60 text-sm hover:border-amber-600/40 transition"
+            >
+              Подпишитесь на игроков в рейтинге, чтобы видеть их активность →
+            </Link>
+          )}
+        </section>
 
         {topRating.length >= 3 && (
           <section>

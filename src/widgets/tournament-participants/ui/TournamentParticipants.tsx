@@ -21,18 +21,24 @@ export function TournamentParticipants({
         )}
       </div>
       <div className="space-y-2">
-        {participants.map((name, i) => (
-          <div
-            key={`${name}-${i}`}
-            className="flex items-center gap-3 p-2 rounded-lg hover:bg-amber-900/10 transition"
-          >
-            <span className="text-amber-200/40 w-6 text-sm font-medium">
-              {i + 1}
-            </span>
-            <UserAvatar name={name} size="md" />
-            <span className="text-white font-medium truncate">{name}</span>
+        {participants.length === 0 ? (
+          <div className="py-6 text-center text-amber-200/50 text-sm">
+            Пока никто не записался — будьте первым!
           </div>
-        ))}
+        ) : (
+          participants.map((name, i) => (
+            <div
+              key={`${name}-${i}`}
+              className="flex items-center gap-3 p-2 rounded-lg hover:bg-amber-900/10 transition"
+            >
+              <span className="text-amber-200/40 w-6 text-sm font-medium">
+                {i + 1}
+              </span>
+              <UserAvatar name={name} size="md" />
+              <span className="text-white font-medium truncate">{name}</span>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

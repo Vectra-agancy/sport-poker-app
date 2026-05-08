@@ -71,9 +71,20 @@ export function RatingScopeTabs({ initialScope, initialRows }: RatingScopeTabsPr
         </div>
       ) : filtered.length === 0 ? (
         <div className="mt-4 rounded-2xl bg-burgundy-800/60 border border-amber-900/20 p-6 text-center text-amber-200/50 text-sm">
-          Никого не нашлось
+          {emptyMessage(scope, Boolean(search.trim()))}
         </div>
       ) : null}
     </>
   );
+}
+
+function emptyMessage(scope: RatingScope, isSearching: boolean): string {
+  if (isSearching) return "Никого не нашлось";
+  if (scope === "friends") {
+    return "Вы ещё ни на кого не подписаны. Откройте профиль игрока, чтобы подписаться.";
+  }
+  if (scope === "season") {
+    return "В этом сезоне ещё нет данных рейтинга.";
+  }
+  return "Рейтинг ещё не сформирован — сыграйте первый турнир.";
 }
