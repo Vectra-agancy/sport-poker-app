@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/shared/api/prisma";
 import { getCurrentUser } from "@/shared/lib/auth-helpers";
+import { recomputeUserAchievements } from "@/entities/achievement/server";
 import { totalPoints } from "../lib/points";
 
 export interface ResultInput {
@@ -104,11 +105,22 @@ export async function submitTournamentResults(
 
   await recomputeGlobalRating();
 
+  // Re-evaluate auto-unlock achievements for everyone touched by this submit.
+  // Achievements only ever go from locked → unlocked, so running for both
+  // attended and no_show users is safe (no_show won't unlock anything new).
+  const touchedUserIds = Array.from(
+    new Set(inputs.map((i) => i.userId))
+  );
+  await Promise.all(
+    touchedUserIds.map((uid) => recomputeUserAchievements(uid))
+  );
+
   revalidatePath("/admin");
   revalidatePath(`/admin/tournaments/${tournamentId}/edit`);
   revalidatePath(`/admin/tournaments/${tournamentId}/results`);
   revalidatePath(`/tournament/${tournamentId}`);
   revalidatePath("/rating");
+  revalidatePath("/profile");
   revalidatePath("/");
   return { ok: true };
 }
