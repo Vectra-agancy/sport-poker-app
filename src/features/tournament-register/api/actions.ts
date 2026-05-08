@@ -51,8 +51,13 @@ async function findOverlappingRegistration(
   };
 }
 
+export interface RegisterOptions {
+  useFreeTicket?: boolean;
+}
+
 export async function registerToTournament(
-  tournamentId: number
+  tournamentId: number,
+  options: RegisterOptions = {}
 ): Promise<ActionResult> {
   const sessionUser = await getCurrentUser();
   if (!sessionUser) {
@@ -109,18 +114,61 @@ export async function registerToTournament(
   const nextStatus =
     registeredCount < tournament.maxSeats ? "registered" : "waitlist";
 
-  if (existing) {
-    await prisma.registration.update({
-      where: { userId_tournamentId: { userId, tournamentId } },
-      data: { status: nextStatus, cancelledAt: null },
+  const wantsFreeTicket = Boolean(options.useFreeTicket);
+
+  try {
+    await prisma.$transaction(async (tx) => {
+      let usedFreeTicket = false;
+
+      if (wantsFreeTicket) {
+        // Re-read freshly inside the transaction to avoid double-spending
+        // when the user has multiple tabs / fast clicks.
+        const fresh = await tx.user.findUnique({
+          where: { id: userId },
+          select: { freeTickets: true },
+        });
+        if (!fresh || fresh.freeTickets <= 0) {
+          throw new RegistrationError("NO_TICKET");
+        }
+        await tx.user.update({
+          where: { id: userId },
+          data: { freeTickets: { decrement: 1 } },
+        });
+        usedFreeTicket = true;
+      }
+
+      if (existing) {
+        await tx.registration.update({
+          where: { userId_tournamentId: { userId, tournamentId } },
+          data: {
+            status: nextStatus,
+            cancelledAt: null,
+            usedFreeTicket,
+          },
+        });
+      } else {
+        await tx.registration.create({
+          data: {
+            userId,
+            tournamentId,
+            status: nextStatus,
+            usedFreeTicket,
+          },
+        });
+      }
     });
-  } else {
-    await prisma.registration.create({
-      data: { userId, tournamentId, status: nextStatus },
-    });
+  } catch (err) {
+    if (err instanceof RegistrationError && err.code === "NO_TICKET") {
+      return {
+        ok: false,
+        error: "Бесплатные билеты закончились",
+      };
+    }
+    throw err;
   }
 
   revalidatePath(`/tournament/${tournamentId}`);
+  revalidatePath("/profile");
   revalidatePath("/");
   return { ok: true, status: nextStatus };
 }
@@ -148,29 +196,51 @@ export async function cancelRegistration(
   }
 
   const wasRegistered = existing.status === "registered";
+  const beforeStart = existing.tournament.startsAt.getTime() > Date.now();
+  const refundTicket = existing.usedFreeTicket && beforeStart;
 
-  await prisma.registration.update({
-    where: { userId_tournamentId: { userId, tournamentId } },
-    data: { status: "cancelled", cancelledAt: new Date() },
-  });
-
-  // Promote first waitlist user when an actual seat freed up
-  if (wasRegistered && existing.tournament.startsAt.getTime() > Date.now()) {
-    const next = await prisma.registration.findFirst({
-      where: { tournamentId, status: "waitlist" },
-      orderBy: { createdAt: "asc" },
+  await prisma.$transaction(async (tx) => {
+    await tx.registration.update({
+      where: { userId_tournamentId: { userId, tournamentId } },
+      data: {
+        status: "cancelled",
+        cancelledAt: new Date(),
+        // Clear the flag so a re-registration starts from a clean slate.
+        usedFreeTicket: false,
+      },
     });
-    if (next) {
-      await prisma.registration.update({
-        where: { id: next.id },
-        data: { status: "registered" },
+
+    if (refundTicket) {
+      await tx.user.update({
+        where: { id: userId },
+        data: { freeTickets: { increment: 1 } },
       });
     }
-  }
+
+    if (wasRegistered && beforeStart) {
+      const next = await tx.registration.findFirst({
+        where: { tournamentId, status: "waitlist" },
+        orderBy: { createdAt: "asc" },
+      });
+      if (next) {
+        await tx.registration.update({
+          where: { id: next.id },
+          data: { status: "registered" },
+        });
+      }
+    }
+  });
 
   revalidatePath(`/tournament/${tournamentId}`);
+  revalidatePath("/profile");
   revalidatePath("/");
   return { ok: true };
+}
+
+class RegistrationError extends Error {
+  constructor(public code: "NO_TICKET") {
+    super(code);
+  }
 }
 
 function pad(n: number): string {

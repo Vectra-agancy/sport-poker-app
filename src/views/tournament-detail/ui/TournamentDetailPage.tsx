@@ -16,6 +16,8 @@ export interface TournamentDetailPageProps {
   participants: string[];
   isRegistered: boolean;
   isWaitlist: boolean;
+  usedFreeTicket: boolean;
+  availableFreeTickets: number;
 }
 
 export function TournamentDetailPage({
@@ -24,6 +26,8 @@ export function TournamentDetailPage({
   participants,
   isRegistered,
   isWaitlist,
+  usedFreeTicket,
+  availableFreeTickets,
 }: TournamentDetailPageProps) {
   const t = tournament;
   return (
@@ -84,8 +88,11 @@ export function TournamentDetailPage({
 
       <TournamentRegisterCta
         tournamentId={t.id}
+        ticketPrice={t.ticket}
         initialRegistered={isRegistered}
         initialWaitlist={isWaitlist}
+        initialUsedFreeTicket={usedFreeTicket}
+        availableFreeTickets={availableFreeTickets}
       />
     </div>
   );
