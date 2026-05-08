@@ -62,12 +62,20 @@ export default async function EditTournamentPage({ params }: PageProps) {
         <h1 className="text-white font-bold text-xl truncate">
           {tournament.name}
         </h1>
-        <Link
-          href="/admin"
-          className="text-sm text-amber-300 underline-offset-4 hover:underline whitespace-nowrap"
-        >
-          ← К списку
-        </Link>
+        <div className="flex items-center gap-3 whitespace-nowrap">
+          <Link
+            href={`/admin/tournaments/${tournament.id}/results`}
+            className="text-sm text-amber-300 underline-offset-4 hover:underline"
+          >
+            Результаты →
+          </Link>
+          <Link
+            href="/admin"
+            className="text-sm text-amber-300 underline-offset-4 hover:underline"
+          >
+            ← К списку
+          </Link>
+        </div>
       </div>
       <TournamentForm
         seasons={seasons}
