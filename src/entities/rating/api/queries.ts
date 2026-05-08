@@ -29,24 +29,88 @@ export async function getRating(options: {
   const seasonId =
     options.scope === "season" ? options.seasonId ?? undefined : undefined;
 
-  const rows = await prisma.ratingSnapshot.findMany({
+  // All rows in a single batch share a near-identical takenAt (the cron runs
+  // once and writes everyone). Allow ±5 min slack when grouping into batches.
+  const BATCH_TOLERANCE_MS = 5 * 60 * 1000;
+
+  // 1. Find the latest batch's anchor timestamp for this scope.
+  const latest = await prisma.ratingSnapshot.findFirst({
     where: {
       scope: dbScope,
       seasonId: seasonId ?? null,
       userId: userIdFilter,
     },
-    orderBy: [{ position: "asc" }, { takenAt: "desc" }],
+    orderBy: { takenAt: "desc" },
+    select: { takenAt: true },
+  });
+  if (!latest) return [];
+
+  const currentFloor = new Date(
+    latest.takenAt.getTime() - BATCH_TOLERANCE_MS
+  );
+
+  // 2. Top-N rows from the latest batch only (avoids interleaving older batches).
+  const rows = await prisma.ratingSnapshot.findMany({
+    where: {
+      scope: dbScope,
+      seasonId: seasonId ?? null,
+      userId: userIdFilter,
+      takenAt: { gte: currentFloor },
+    },
+    orderBy: { position: "asc" },
     include: { user: { select: { nickname: true } } },
     take: limit,
   });
+  if (rows.length === 0) return [];
 
-  return rows.map((r) => ({
-    pos: r.position,
-    name: r.user.nickname,
-    bounties: r.bounties,
-    points: r.points,
-    change: 0, // computed in a richer query later (compare to previous snapshot)
-  }));
+  // 3. Find the previous batch (any snapshot strictly older than current floor)
+  //    and pull positions for the same users to compute their change.
+  const previousAnchor = await prisma.ratingSnapshot.findFirst({
+    where: {
+      scope: dbScope,
+      seasonId: seasonId ?? null,
+      takenAt: { lt: currentFloor },
+    },
+    orderBy: { takenAt: "desc" },
+    select: { takenAt: true },
+  });
+
+  const previousMap = new Map<number, number>();
+  if (previousAnchor) {
+    const previousFloor = new Date(
+      previousAnchor.takenAt.getTime() - BATCH_TOLERANCE_MS
+    );
+    const previousRows = await prisma.ratingSnapshot.findMany({
+      where: {
+        scope: dbScope,
+        seasonId: seasonId ?? null,
+        userId: { in: rows.map((r) => r.userId) },
+        takenAt: { gte: previousFloor, lte: previousAnchor.takenAt },
+      },
+      select: { userId: true, position: true, takenAt: true },
+      orderBy: { takenAt: "desc" },
+    });
+    for (const p of previousRows) {
+      // Multiple rows for one user shouldn't happen within a batch, but if it
+      // does, keep the most recent (sorted desc above).
+      if (!previousMap.has(p.userId)) {
+        previousMap.set(p.userId, p.position);
+      }
+    }
+  }
+
+  return rows.map((r) => {
+    const prev = previousMap.get(r.userId);
+    // change > 0 means position improved (lower number = higher rank).
+    const change = prev !== undefined ? prev - r.position : 0;
+    return {
+      pos: r.position,
+      name: r.user.nickname,
+      bounties: r.bounties,
+      points: r.points,
+      change,
+    };
+  });
 }
 
 export interface FriendFeedItem {

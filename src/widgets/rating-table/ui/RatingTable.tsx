@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { RatingRow } from "@/entities/rating";
 import { UserAvatar } from "@/entities/user";
 
@@ -15,9 +16,10 @@ export function RatingTable({ rows }: RatingTableProps) {
         <div className="col-span-3 text-right">Очки</div>
       </div>
       {rows.map((p) => (
-        <div
+        <Link
           key={p.pos}
-          className="grid grid-cols-12 gap-2 px-4 py-3 items-center border-b border-amber-900/10 last:border-b-0"
+          href={`/u/${encodeURIComponent(p.name)}`}
+          className="grid grid-cols-12 gap-2 px-4 py-3 items-center border-b border-amber-900/10 last:border-b-0 hover:bg-amber-900/10 active:bg-amber-900/15 transition"
         >
           <div className="col-span-1 text-amber-200/60 font-medium">{p.pos}</div>
           <div className="col-span-5 flex items-center gap-2 min-w-0">
@@ -36,7 +38,7 @@ export function RatingTable({ rows }: RatingTableProps) {
           <div className="col-span-3 text-right text-amber-300 font-bold">
             {p.points.toLocaleString()}
           </div>
-        </div>
+        </Link>
       ))}
     </div>
   );

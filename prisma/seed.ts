@@ -172,9 +172,36 @@ async function main() {
   // ─── Snapshots для рейтинга ──────────────────────────
   console.log("→ Seeding rating snapshots...");
   const today = new Date();
+  const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+  // Previous batch: positions shifted around so dynamics arrows have data
+  // to compare against. Pattern: cyclic shift by 1 + a couple of swaps.
+  const previousPositions: number[] = ratingPlayers.map((_, i) => i + 1);
+  // Swap 0 ↔ 1, 2 ↔ 3 to seed visible ▲/▼ for the top of the table.
+  [previousPositions[0], previousPositions[1]] = [
+    previousPositions[1],
+    previousPositions[0],
+  ];
+  if (previousPositions.length > 3) {
+    [previousPositions[2], previousPositions[3]] = [
+      previousPositions[3],
+      previousPositions[2],
+    ];
+  }
+
   for (let i = 0; i < ratingPlayers.length; i++) {
     const p = ratingPlayers[i];
     const userId = ratingUsers[i].id;
+    await prisma.ratingSnapshot.create({
+      data: {
+        userId,
+        scope: "global",
+        position: previousPositions[i],
+        points: p.points - 200,
+        bounties: Math.max(0, p.bounties - 2),
+        takenAt: weekAgo,
+      },
+    });
     await prisma.ratingSnapshot.create({
       data: {
         userId,
@@ -186,6 +213,18 @@ async function main() {
       },
     });
   }
+
+  // The viewing user ("me") — was #46 a week ago, now #45 (▲1).
+  await prisma.ratingSnapshot.create({
+    data: {
+      userId: me.id,
+      scope: "global",
+      position: 46,
+      points: 8000,
+      bounties: 32,
+      takenAt: weekAgo,
+    },
+  });
   await prisma.ratingSnapshot.create({
     data: {
       userId: me.id,
