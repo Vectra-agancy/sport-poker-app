@@ -21,6 +21,9 @@ export async function getUserProfile(
       email: true,
       freeTickets: true,
       referralCode: true,
+      telegramId: true,
+      notifyTelegram: true,
+      notifyEmail: true,
       _count: {
         select: {
           referrals: true,
@@ -84,6 +87,9 @@ export async function getUserProfile(
     invitedCount: user._count.referrals,
     refereesGamesPlayed: refProgress._sum.attendedTournaments ?? 0,
     referralCode: user.referralCode,
+    notifyTelegram: user.notifyTelegram,
+    notifyEmail: user.notifyEmail,
+    hasTelegram: Boolean(user.telegramId),
   };
 }
 

@@ -6,6 +6,7 @@ import { ReferralCard } from "@/widgets/referral-card";
 import { RatingChart } from "@/widgets/rating-chart";
 import { BindEmailForm } from "@/features/bind-email";
 import { ChangeNicknameDialog } from "@/features/change-nickname";
+import { NotificationSettings } from "@/features/notification-settings";
 import type { Achievement } from "@/entities/achievement";
 import { TIER_LABELS, UserAvatar, type CurrentUser } from "@/entities/user";
 
@@ -101,6 +102,12 @@ export function ProfilePage({ user, achievements, isAdmin }: ProfilePageProps) {
             refereesGamesPlayed: user.refereesGamesPlayed,
             referralCode: user.referralCode,
           }}
+        />
+        <NotificationSettings
+          initialNotifyTelegram={user.notifyTelegram}
+          initialNotifyEmail={user.notifyEmail}
+          hasTelegram={user.hasTelegram}
+          hasEmail={Boolean(user.email)}
         />
         {!user.email && <BindEmailForm />}
       </div>

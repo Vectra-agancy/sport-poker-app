@@ -21,4 +21,7 @@ export interface CurrentUser extends User {
   invitedCount: number;
   refereesGamesPlayed: number;
   referralCode: string;
+  notifyTelegram: boolean;
+  notifyEmail: boolean;
+  hasTelegram: boolean;
 }

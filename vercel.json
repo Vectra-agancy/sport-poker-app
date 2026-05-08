@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/tournament-reminders",
+      "schedule": "*/15 * * * *"
+    }
+  ]
+}
