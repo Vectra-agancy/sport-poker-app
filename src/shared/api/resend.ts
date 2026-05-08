@@ -62,3 +62,49 @@ export async function sendOtpEmail({
     throw new Error(`Resend failed: ${error.message ?? "unknown"}`);
   }
 }
+
+export interface SendUserEmailOptions {
+  to: string;
+  subject: string;
+  /** Plain-text body. Embedded inside the brand-styled wrapper. */
+  body: string;
+}
+
+/**
+ * Sends a generic transactional email (reminder, waitlist promotion, ...).
+ * No-op in dev when RESEND_API_KEY is missing — body is logged instead so
+ * the local flow remains testable.
+ */
+export async function sendUserEmail({
+  to,
+  subject,
+  body,
+}: SendUserEmailOptions): Promise<void> {
+  const resend = getResend();
+  const from = process.env.EMAIL_FROM ?? "RERAISE CLUB <noreply@reraise.club>";
+
+  if (!resend) {
+    console.warn(
+      `[email] RESEND_API_KEY missing — would send to ${to}: ${subject}\n${body}`
+    );
+    return;
+  }
+
+  const safeBody = body
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\n/g, "<br/>");
+
+  const html = `
+    <div style="font-family:system-ui,-apple-system,sans-serif;max-width:480px;margin:0 auto;padding:24px;background:#1a0a0c;color:#fde68a;border-radius:16px;">
+      <h1 style="font-family:Georgia,serif;color:#fcd34d;margin:0 0 12px 0;">RERAISE CLUB</h1>
+      <p style="margin:0;line-height:1.5;">${safeBody}</p>
+    </div>
+  `;
+
+  const { error } = await resend.emails.send({ from, to, subject, html });
+  if (error) {
+    throw new Error(`Resend failed: ${error.message ?? "unknown"}`);
+  }
+}

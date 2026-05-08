@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/shared/api/prisma";
+import { notifyUser } from "@/shared/api/notifications";
 import { getCurrentUser } from "@/shared/lib/auth-helpers";
 
 // Approximate tournament window for overlap detection.
@@ -185,7 +186,9 @@ export async function cancelRegistration(
   const existing = await prisma.registration.findUnique({
     where: { userId_tournamentId: { userId, tournamentId } },
     include: {
-      tournament: { select: { startsAt: true, status: true } },
+      tournament: {
+        select: { name: true, startsAt: true, status: true },
+      },
     },
   });
   if (!existing) {
@@ -198,6 +201,8 @@ export async function cancelRegistration(
   const wasRegistered = existing.status === "registered";
   const beforeStart = existing.tournament.startsAt.getTime() > Date.now();
   const refundTicket = existing.usedFreeTicket && beforeStart;
+
+  let promotedUserId: number | null = null;
 
   await prisma.$transaction(async (tx) => {
     await tx.registration.update({
@@ -227,9 +232,21 @@ export async function cancelRegistration(
           where: { id: next.id },
           data: { status: "registered" },
         });
+        promotedUserId = next.userId;
       }
     }
   });
+
+  if (promotedUserId !== null) {
+    const startsAt = existing.tournament.startsAt;
+    const when = `${pad(startsAt.getDate())}.${pad(
+      startsAt.getMonth() + 1
+    )} в ${pad(startsAt.getHours())}:${pad(startsAt.getMinutes())}`;
+    void notifyUser(promotedUserId, {
+      subject: "Место освободилось!",
+      body: `Вы перешли из листа ожидания в основной список турнира «${existing.tournament.name}» ${when}. Удачи!`,
+    });
+  }
 
   revalidatePath(`/tournament/${tournamentId}`);
   revalidatePath("/profile");

@@ -105,6 +105,11 @@ model Tournament {
   createdById     Int?
   createdBy       User?    @relation("TournamentCreator", fields: [createdById], references: [id], onDelete: SetNull)
 
+  // Per-stage reminder dedup. Set when the cron sends each tier of
+  // notification so re-runs never spam the same audience twice.
+  reminded24hAt   DateTime?
+  reminded1hAt    DateTime?
+
   levels          TournamentLevel[]
   registrations   Registration[]
   results         TournamentResult[]
