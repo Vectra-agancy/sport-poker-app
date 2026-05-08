@@ -9,14 +9,21 @@ import { ChangeNicknameDialog } from "@/features/change-nickname";
 import { NotificationSettings } from "@/features/notification-settings";
 import type { Achievement } from "@/entities/achievement";
 import { TIER_LABELS, UserAvatar, type CurrentUser } from "@/entities/user";
+import type { RatingHistory } from "@/entities/user/server";
 
 export interface ProfilePageProps {
   user: CurrentUser;
   achievements: Achievement[];
+  ratingHistory: RatingHistory;
   isAdmin?: boolean;
 }
 
-export function ProfilePage({ user, achievements, isAdmin }: ProfilePageProps) {
+export function ProfilePage({
+  user,
+  achievements,
+  ratingHistory,
+  isAdmin,
+}: ProfilePageProps) {
   return (
     <div className="pb-28">
       <Header title="Профиль" />
@@ -93,7 +100,11 @@ export function ProfilePage({ user, achievements, isAdmin }: ProfilePageProps) {
           </div>
         </div>
 
-        <RatingChart delta={340} rangeLabel="30 дней" />
+        <RatingChart
+          points={ratingHistory.points}
+          delta={ratingHistory.delta}
+          rangeLabel={ratingHistory.rangeLabel}
+        />
         <AchievementsGrid achievements={achievements} />
         <ReferralCard
           user={{

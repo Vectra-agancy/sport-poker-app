@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import { ProfilePage, ProfilePageAnonymous } from "@/views/profile";
 import { BottomNav } from "@/widgets/bottom-nav";
 import { getCurrentUser } from "@/shared/lib/auth-helpers";
-import { getUserProfile } from "@/entities/user/server";
+import {
+  getUserProfile,
+  getUserRatingHistory,
+} from "@/entities/user/server";
 import { getAchievementsForUser } from "@/entities/achievement/server";
 
 export const metadata: Metadata = {
@@ -23,9 +26,10 @@ export default async function Page() {
   }
 
   const userId = Number(sessionUser.id);
-  const [user, achievements] = await Promise.all([
+  const [user, achievements, ratingHistory] = await Promise.all([
     getUserProfile(userId),
     getAchievementsForUser(userId),
+    getUserRatingHistory(userId),
   ]);
 
   if (!user) {
@@ -42,6 +46,7 @@ export default async function Page() {
       <ProfilePage
         user={user}
         achievements={achievements}
+        ratingHistory={ratingHistory}
         isAdmin={sessionUser.isAdmin}
       />
       <BottomNav />
