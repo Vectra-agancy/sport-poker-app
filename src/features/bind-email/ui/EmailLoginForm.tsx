@@ -2,17 +2,16 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Check } from "lucide-react";
+import { signIn } from "next-auth/react";
 import { Button, Input } from "@/shared/ui";
-import { bindEmailToCurrentUser } from "../api/actions";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export function BindEmailForm() {
+export function EmailLoginForm() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
-  const [step, setStep] = useState<"email" | "code" | "done">("email");
+  const [step, setStep] = useState<"email" | "code">("email");
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -60,44 +59,32 @@ export function BindEmailForm() {
     });
   };
 
-  const verify = () => {
+  const signInWithCode = () => {
     setError(null);
     if (!/^\d+$/.test(code.trim())) {
       setError("Код состоит из цифр");
       return;
     }
     startTransition(async () => {
-      const result = await bindEmailToCurrentUser({
+      const result = await signIn("email-otp", {
         email: email.trim(),
         code: code.trim(),
+        redirect: false,
       });
-      if (!result.ok) {
-        setError(result.error ?? "Не удалось проверить код");
+      if (!result?.ok) {
+        setError("Неверный или просроченный код");
         return;
       }
-      setStep("done");
-      setInfo("Email привязан");
+      router.push("/profile");
       router.refresh();
     });
   };
 
-  if (step === "done") {
-    return (
-      <div className="rounded-2xl bg-emerald-900/20 border border-emerald-700/40 p-5 flex items-center gap-3">
-        <Check className="w-5 h-5 text-emerald-400" />
-        <div>
-          <div className="text-white font-bold">Email привязан</div>
-          <div className="text-emerald-300/70 text-sm">{email}</div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="rounded-2xl bg-burgundy-800/80 border border-amber-900/20 p-5">
-      <h3 className="text-white font-bold mb-2">Привязать email</h3>
+      <h3 className="text-white font-bold mb-2">Вход по email</h3>
       <p className="text-amber-100/60 text-sm mb-3">
-        Чтобы можно было входить через браузер.
+        Получите 6-значный код на почту.
       </p>
 
       {step === "email" && (
@@ -132,8 +119,8 @@ export function BindEmailForm() {
               }
               disabled={pending}
             />
-            <Button type="button" onClick={verify} disabled={pending}>
-              {pending ? "..." : "Подтвердить"}
+            <Button type="button" onClick={signInWithCode} disabled={pending}>
+              {pending ? "..." : "Войти"}
             </Button>
           </div>
           <button

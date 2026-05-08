@@ -55,6 +55,21 @@ export async function POST(req: Request) {
     },
   });
 
+  // No Resend key configured: short-circuit to dev-mode response so the UI
+  // tells the user to grab the code from server logs, instead of a
+  // misleading "Код отправлен на email".
+  if (!process.env.RESEND_API_KEY) {
+    console.warn(
+      `[auth/email/send-code] RESEND_API_KEY missing — code for ${email}: ${code}`
+    );
+    return NextResponse.json({
+      ok: true,
+      ttlMinutes: OTP_TTL_MINUTES,
+      devNote:
+        "Resend не настроен; код напечатан в логах сервера",
+    });
+  }
+
   try {
     await sendOtpEmail({ to: email, code, ttlMinutes: OTP_TTL_MINUTES });
   } catch (err) {

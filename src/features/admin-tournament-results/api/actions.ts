@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/shared/api/prisma";
 import { getCurrentUser } from "@/shared/lib/auth-helpers";
 import { recomputeUserAchievements } from "@/entities/achievement/server";
+import { recomputeGlobalRating } from "@/entities/rating/server";
 import { recomputeReferralProgress } from "@/entities/user/server";
 import { totalPoints } from "../lib/points";
 
@@ -127,36 +128,3 @@ export async function submitTournamentResults(
   return { ok: true };
 }
 
-async function recomputeGlobalRating(): Promise<void> {
-  const results = await prisma.tournamentResult.findMany({
-    select: { userId: true, pointsAwarded: true, bountiesCount: true },
-  });
-
-  const byUser = new Map<
-    number,
-    { points: number; bounties: number }
-  >();
-  for (const r of results) {
-    const cur = byUser.get(r.userId) ?? { points: 0, bounties: 0 };
-    cur.points += r.pointsAwarded;
-    cur.bounties += r.bountiesCount;
-    byUser.set(r.userId, cur);
-  }
-  if (byUser.size === 0) return;
-
-  const sorted = [...byUser.entries()]
-    .map(([userId, agg]) => ({ userId, ...agg }))
-    .sort((a, b) => b.points - a.points || b.bounties - a.bounties);
-
-  const takenAt = new Date();
-  await prisma.ratingSnapshot.createMany({
-    data: sorted.map((row, i) => ({
-      userId: row.userId,
-      scope: "global",
-      position: i + 1,
-      points: row.points,
-      bounties: row.bounties,
-      takenAt,
-    })),
-  });
-}

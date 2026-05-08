@@ -4,7 +4,7 @@ import { Header } from "@/widgets/header";
 import { AchievementsGrid } from "@/widgets/achievements-grid";
 import { ReferralCard } from "@/widgets/referral-card";
 import { RatingChart } from "@/widgets/rating-chart";
-import { BindEmailForm } from "@/features/bind-email";
+import { BindEmailForm, EmailLoginForm } from "@/features/bind-email";
 import { ChangeNicknameDialog } from "@/features/change-nickname";
 import { NotificationSettings } from "@/features/notification-settings";
 import type { Achievement } from "@/entities/achievement";
@@ -142,7 +142,7 @@ export function ProfilePageAnonymous() {
             входа здесь будут ваш профиль, статистика и достижения.
           </p>
         </div>
-        <BindEmailForm />
+        <EmailLoginForm />
       </div>
     </div>
   );

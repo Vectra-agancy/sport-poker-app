@@ -109,16 +109,20 @@ export async function registerToTournament(
     };
   }
 
-  const registeredCount = await prisma.registration.count({
-    where: { tournamentId, status: "registered" },
-  });
-  const nextStatus =
-    registeredCount < tournament.maxSeats ? "registered" : "waitlist";
-
   const wantsFreeTicket = Boolean(options.useFreeTicket);
+  let nextStatus: "registered" | "waitlist" = "registered";
 
   try {
     await prisma.$transaction(async (tx) => {
+      // Re-read seat count INSIDE the transaction. Without this, two
+      // concurrent registrants for the same last seat could both observe
+      // count < maxSeats outside the tx and both end up "registered".
+      const registeredCount = await tx.registration.count({
+        where: { tournamentId, status: "registered" },
+      });
+      nextStatus =
+        registeredCount < tournament.maxSeats ? "registered" : "waitlist";
+
       let usedFreeTicket = false;
 
       if (wantsFreeTicket) {

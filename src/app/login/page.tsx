@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Header } from "@/widgets/header";
-import { BindEmailForm } from "@/features/bind-email";
+import { EmailLoginForm } from "@/features/bind-email";
 import { auth } from "@/shared/api/auth";
 
 export const metadata: Metadata = {
@@ -26,7 +26,7 @@ export default async function LoginPage() {
             автоматически. Либо подтвердите email одноразовым кодом.
           </p>
         </div>
-        <BindEmailForm />
+        <EmailLoginForm />
       </div>
     </div>
   );
