@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { TournamentDetailPage } from "@/views/tournament-detail";
 import { BottomNav } from "@/widgets/bottom-nav";
@@ -12,6 +13,22 @@ import { prisma } from "@/shared/api/prisma";
 
 interface PageProps {
   params: { id: string };
+}
+
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
+  const id = Number(params.id);
+  if (!Number.isFinite(id)) return { title: "Турнир" };
+  const t = await getTournamentById(id);
+  if (!t) return { title: "Турнир" };
+  const description = `Турнир «${t.name}» · ${t.date} в ${t.time} · ${t.seats}/${t.maxSeats} мест.`;
+  return {
+    title: t.name,
+    description,
+    openGraph: { title: t.name, description, type: "article" },
+    twitter: { card: "summary", title: t.name, description },
+  };
 }
 
 export default async function Page({ params }: PageProps) {

@@ -1,8 +1,14 @@
+import type { Metadata } from "next";
 import { ProfilePage, ProfilePageAnonymous } from "@/views/profile";
 import { BottomNav } from "@/widgets/bottom-nav";
 import { getCurrentUser } from "@/shared/lib/auth-helpers";
 import { getUserProfile } from "@/entities/user/server";
 import { getAchievementsForUser } from "@/entities/achievement/server";
+
+export const metadata: Metadata = {
+  title: "Профиль",
+  robots: { index: false, follow: false },
+};
 
 export default async function Page() {
   const sessionUser = await getCurrentUser();

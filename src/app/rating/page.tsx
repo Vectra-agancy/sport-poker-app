@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { RatingPage } from "@/views/rating";
 import { BottomNav } from "@/widgets/bottom-nav";
 import { getRating } from "@/entities/rating/server";
@@ -5,6 +6,11 @@ import type { RatingScope } from "@/entities/rating";
 import { getCurrentUser } from "@/shared/lib/auth-helpers";
 import { getNeighborTarget } from "@/entities/user/server";
 import { prisma } from "@/shared/api/prisma";
+
+export const metadata: Metadata = {
+  title: "Рейтинг",
+  description: "Глобальный рейтинг игроков RERAISE CLUB по очкам и баунти.",
+};
 
 interface PageProps {
   searchParams: { scope?: string };

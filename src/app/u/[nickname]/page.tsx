@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { PublicProfilePage } from "@/views/public-profile";
 import { BottomNav } from "@/widgets/bottom-nav";
@@ -10,6 +11,32 @@ import { getAchievementsForUser } from "@/entities/achievement/server";
 
 interface PageProps {
   params: { nickname: string };
+}
+
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
+  const nickname = decodeURIComponent(params.nickname);
+  const user = await getPublicProfileByNickname(nickname);
+  if (!user) return { title: "Профиль" };
+  const description =
+    user.ratingPosition > 0
+      ? `${user.nickname} · #${user.ratingPosition} в рейтинге · ${user.points.toLocaleString("ru-RU")} очков.`
+      : `${user.nickname} в RERAISE CLUB.`;
+  return {
+    title: user.nickname,
+    description,
+    openGraph: {
+      title: `${user.nickname} · RERAISE CLUB`,
+      description,
+      type: "profile",
+    },
+    twitter: {
+      card: "summary",
+      title: `${user.nickname} · RERAISE CLUB`,
+      description,
+    },
+  };
 }
 
 export default async function Page({ params }: PageProps) {

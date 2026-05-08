@@ -1,6 +1,12 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/shared/lib/auth-helpers";
+
+export const metadata: Metadata = {
+  title: "Админка",
+  robots: { index: false, follow: false },
+};
 
 export default async function AdminLayout({
   children,

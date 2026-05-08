@@ -4,11 +4,42 @@ import "./globals.css";
 import { auth } from "@/shared/api/auth";
 import { TelegramAuthBridge } from "@/widgets/telegram-auth-bridge";
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://reraise.club";
+const SITE_NAME = "RERAISE CLUB";
+const SITE_DESCRIPTION =
+  "Покерный клуб: запись на турниры, рейтинг, достижения и приглашения друзей.";
+
 export const metadata: Metadata = {
-  title: "RERAISE CLUB",
-  description:
-    "Покерный клуб: запись на турниры, рейтинг, достижения и приглашения друзей.",
-  applicationName: "RERAISE CLUB",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: SITE_NAME,
+    template: `%s · ${SITE_NAME}`,
+  },
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  keywords: ["покер", "клуб", "турниры", "рейтинг", "RERAISE"],
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    siteName: SITE_NAME,
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
+    url: SITE_URL,
+    locale: "ru_RU",
+  },
+  twitter: {
+    card: "summary",
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/favicon.ico",
+  },
 };
 
 export const viewport: Viewport = {
