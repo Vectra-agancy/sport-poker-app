@@ -99,6 +99,7 @@ export function ProfilePage({ user, achievements, isAdmin }: ProfilePageProps) {
             freeTickets: user.freeTickets,
             invitedCount: user.invitedCount,
             refereesGamesPlayed: user.refereesGamesPlayed,
+            referralCode: user.referralCode,
           }}
         />
         {!user.email && <BindEmailForm />}

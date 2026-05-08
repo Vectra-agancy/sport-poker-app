@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/shared/api/prisma";
 import { getCurrentUser } from "@/shared/lib/auth-helpers";
 import { recomputeUserAchievements } from "@/entities/achievement/server";
+import { recomputeReferralProgress } from "@/entities/user/server";
 import { totalPoints } from "../lib/points";
 
 export interface ResultInput {
@@ -111,9 +112,10 @@ export async function submitTournamentResults(
   const touchedUserIds = Array.from(
     new Set(inputs.map((i) => i.userId))
   );
-  await Promise.all(
-    touchedUserIds.map((uid) => recomputeUserAchievements(uid))
-  );
+  await Promise.all([
+    ...touchedUserIds.map((uid) => recomputeUserAchievements(uid)),
+    ...touchedUserIds.map((uid) => recomputeReferralProgress(uid)),
+  ]);
 
   revalidatePath("/admin");
   revalidatePath(`/admin/tournaments/${tournamentId}/edit`);

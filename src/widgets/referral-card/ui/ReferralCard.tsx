@@ -1,17 +1,17 @@
-import { Gift, Share2 } from "lucide-react";
+import { Gift } from "lucide-react";
 import type { CurrentUser } from "@/entities/user";
+import { ShareReferralButton } from "@/features/share-referral";
 
 export interface ReferralCardProps {
   user: Pick<
     CurrentUser,
-    "freeTickets" | "invitedCount" | "refereesGamesPlayed"
+    "freeTickets" | "invitedCount" | "refereesGamesPlayed" | "referralCode"
   >;
-  onShare?: () => void;
 }
 
 const GAMES_PER_TICKET = 10;
 
-export function ReferralCard({ user, onShare }: ReferralCardProps) {
+export function ReferralCard({ user }: ReferralCardProps) {
   const inProgress = user.refereesGamesPlayed % GAMES_PER_TICKET;
   const pct = Math.round((inProgress / GAMES_PER_TICKET) * 100);
 
@@ -61,14 +61,7 @@ export function ReferralCard({ user, onShare }: ReferralCardProps) {
           />
         </div>
       </div>
-      <button
-        type="button"
-        onClick={onShare}
-        className="w-full py-3 rounded-xl bg-amber-500 text-black font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition"
-      >
-        <Share2 className="w-4 h-4" />
-        Поделиться ссылкой
-      </button>
+      <ShareReferralButton referralCode={user.referralCode} />
     </div>
   );
 }

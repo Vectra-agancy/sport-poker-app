@@ -1,15 +1,65 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
+import { cookies } from "next/headers";
 import { prisma } from "./prisma";
 import { verifyTelegramInitData } from "@/shared/lib/telegram";
 import { OTP_MAX_ATTEMPTS, verifyOtpCode } from "@/shared/lib/otp";
 
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const REFERRAL_COOKIE = "ref_code";
 
 function generateReferralCode(seed: string): string {
   // 6 char base36 hash from seed + random
   const random = Math.random().toString(36).slice(2, 6).toUpperCase();
   return `${seed.slice(0, 2).toUpperCase()}${random}`;
+}
+
+/**
+ * Reads the ref_code cookie set by /r/[code] and links the brand-new user
+ * to the referrer. No-op if cookie is missing, code is unknown, or it
+ * matches the user themselves. The cookie is cleared after use.
+ */
+async function applyReferral(newUserId: number): Promise<void> {
+  let store: Awaited<ReturnType<typeof cookies>> | null = null;
+  try {
+    store = await cookies();
+  } catch {
+    return;
+  }
+  const code = store.get(REFERRAL_COOKIE)?.value?.trim();
+  if (!code) return;
+
+  const referrer = await prisma.user.findUnique({
+    where: { referralCode: code },
+    select: { id: true },
+  });
+  if (!referrer || referrer.id === newUserId) {
+    try {
+      store.delete(REFERRAL_COOKIE);
+    } catch {
+      // Cookie store is read-only in some Next contexts; safe to ignore.
+    }
+    return;
+  }
+
+  await prisma.user.update({
+    where: { id: newUserId },
+    data: { referredById: referrer.id },
+  });
+  await prisma.referralProgress.upsert({
+    where: { refereeId: newUserId },
+    create: {
+      referrerId: referrer.id,
+      refereeId: newUserId,
+    },
+    update: {},
+  });
+
+  try {
+    store.delete(REFERRAL_COOKIE);
+  } catch {
+    // ignore — see above
+  }
 }
 
 async function upsertTelegramUser(payload: {
@@ -43,7 +93,7 @@ async function upsertTelegramUser(payload: {
     }
   }
 
-  return prisma.user.create({
+  const created = await prisma.user.create({
     data: {
       telegramId: payload.telegramId,
       nickname,
@@ -51,6 +101,8 @@ async function upsertTelegramUser(payload: {
       referralCode: generateReferralCode(payload.telegramId),
     },
   });
+  await applyReferral(created.id);
+  return created;
 }
 
 async function upsertEmailUser(email: string) {
@@ -74,7 +126,7 @@ async function upsertEmailUser(email: string) {
     }
   }
 
-  return prisma.user.create({
+  const created = await prisma.user.create({
     data: {
       email: normalized,
       emailVerified: new Date(),
@@ -82,6 +134,8 @@ async function upsertEmailUser(email: string) {
       referralCode: generateReferralCode(baseNick || "user"),
     },
   });
+  await applyReferral(created.id);
+  return created;
 }
 
 export const {

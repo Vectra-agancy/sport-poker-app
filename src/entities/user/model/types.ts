@@ -20,4 +20,5 @@ export interface CurrentUser extends User {
   freeTickets: number;
   invitedCount: number;
   refereesGamesPlayed: number;
+  referralCode: string;
 }

@@ -20,6 +20,7 @@ export async function getUserProfile(
       tier: true,
       email: true,
       freeTickets: true,
+      referralCode: true,
       _count: {
         select: {
           referrals: true,
@@ -82,6 +83,7 @@ export async function getUserProfile(
     freeTickets: user.freeTickets,
     invitedCount: user._count.referrals,
     refereesGamesPlayed: refProgress._sum.attendedTournaments ?? 0,
+    referralCode: user.referralCode,
   };
 }
 
