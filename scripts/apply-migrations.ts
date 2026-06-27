@@ -14,10 +14,21 @@ if (!raw) {
   throw new Error("DATABASE_URL is required");
 }
 
-const u = new URL(raw);
-const authToken = u.searchParams.get("authToken") ?? process.env.TURSO_AUTH_TOKEN ?? undefined;
-u.searchParams.delete("authToken");
-const client = createClient({ url: u.toString(), authToken });
+// For local file: URLs, pass the raw value through — running it through
+// `new URL` normalizes "file:./dev.db" to "file:///dev.db" and points libsql
+// at the filesystem root. Only Turso/libsql URLs need authToken extraction.
+let url: string;
+let authToken: string | undefined;
+if (raw.startsWith("file:")) {
+  url = raw;
+  authToken = process.env.TURSO_AUTH_TOKEN ?? undefined;
+} else {
+  const u = new URL(raw);
+  authToken = u.searchParams.get("authToken") ?? process.env.TURSO_AUTH_TOKEN ?? undefined;
+  u.searchParams.delete("authToken");
+  url = u.toString();
+}
+const client = createClient({ url, authToken });
 
 const migrationsDir = path.join(process.cwd(), "prisma", "migrations");
 

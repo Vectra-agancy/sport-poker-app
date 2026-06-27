@@ -81,12 +81,37 @@ const config: Config = {
           from: { transform: "translateY(-8px)", opacity: "0" },
           to: { transform: "translateY(0)", opacity: "1" },
         },
+        "rise-up": {
+          from: { transform: "translateY(14px)", opacity: "0" },
+          to: { transform: "translateY(0)", opacity: "1" },
+        },
+        "pop-in": {
+          "0%": { transform: "scale(0.85)", opacity: "0" },
+          "60%": { transform: "scale(1.04)", opacity: "1" },
+          "100%": { transform: "scale(1)", opacity: "1" },
+        },
+        float: {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-5px)" },
+        },
+        "glow-pulse": {
+          "0%, 100%": { opacity: "0.35" },
+          "50%": { opacity: "0.7" },
+        },
+        shimmer: {
+          "100%": { transform: "translateX(200%)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "fade-in": "fade-in 0.2s ease-out",
         "slide-in-from-top": "slide-in-from-top 0.2s ease-out",
+        "rise-up": "rise-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both",
+        "pop-in": "pop-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both",
+        float: "float 3s ease-in-out infinite",
+        "glow-pulse": "glow-pulse 3s ease-in-out infinite",
+        shimmer: "shimmer 2.5s ease-in-out infinite",
       },
     },
   },

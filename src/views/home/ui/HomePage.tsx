@@ -47,7 +47,7 @@ export function HomePage({
       <Header />
       <div className="px-4 space-y-6">
         {myRegistrations.length > 0 && (
-          <section>
+          <section className="animate-rise-up" style={{ animationDelay: "0ms" }}>
             <div className="flex items-center gap-2 mb-3">
               <div className="w-1 h-5 bg-amber-500 rounded-full" />
               <h2 className="text-white font-bold text-lg">Мои записи</h2>
@@ -75,7 +75,7 @@ export function HomePage({
           </section>
         )}
 
-        <section>
+        <section className="animate-rise-up" style={{ animationDelay: "70ms" }}>
           <div className="flex items-center gap-2 mb-3">
             <Trophy className="w-5 h-5 text-amber-400" />
             <h2 className="text-white font-bold text-lg">Ближайшие турниры</h2>
@@ -87,7 +87,7 @@ export function HomePage({
           )}
         </section>
 
-        <section>
+        <section className="animate-rise-up" style={{ animationDelay: "140ms" }}>
           <div className="flex items-center gap-2 mb-3">
             <Users className="w-5 h-5 text-amber-400" />
             <h2 className="text-white font-bold text-lg">Лента друзей</h2>
@@ -105,7 +105,7 @@ export function HomePage({
         </section>
 
         {topRating.length >= 3 && (
-          <section>
+          <section className="animate-rise-up" style={{ animationDelay: "210ms" }}>
             <div className="flex items-center gap-2 mb-3">
               <Crown className="w-5 h-5 text-amber-400" />
               <h2 className="text-white font-bold text-lg">Топ рейтинга</h2>
@@ -114,7 +114,7 @@ export function HomePage({
           </section>
         )}
 
-        <section>
+        <section className="animate-rise-up" style={{ animationDelay: "280ms" }}>
           <div className="flex items-center gap-2 mb-3">
             <TrendingUp className="w-5 h-5 text-amber-400" />
             <h2 className="text-white font-bold text-lg">Клуб в цифрах</h2>
@@ -131,8 +131,9 @@ export function HomePage({
 
 function StatCard({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-2xl bg-gradient-to-br from-burgundy-700 to-burgundy-800 border border-amber-900/20 p-4">
-      <div className="text-3xl font-bold text-white">{value}</div>
+    <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-burgundy-700 to-burgundy-800 border border-amber-900/20 p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-amber-600/40 hover:shadow-lg hover:shadow-amber-950/40">
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-400/50 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+      <div className="text-3xl font-bold text-white tabular-nums">{value}</div>
       <div className="text-xs text-amber-200/60 uppercase tracking-wider mt-1">
         {label}
       </div>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { cn } from "@/shared/lib/utils";
 import type { RatingRow } from "@/entities/rating";
 import { UserAvatar } from "@/entities/user";
 
@@ -15,13 +16,24 @@ export function RatingTable({ rows }: RatingTableProps) {
         <div className="col-span-3 text-right">Баунти</div>
         <div className="col-span-3 text-right">Очки</div>
       </div>
-      {rows.map((p) => (
+      {rows.map((p, i) => (
         <Link
           key={p.pos}
           href={`/u/${encodeURIComponent(p.name)}`}
-          className="grid grid-cols-12 gap-2 px-4 py-3 items-center border-b border-amber-900/10 last:border-b-0 hover:bg-amber-900/10 active:bg-amber-900/15 transition"
+          style={{ animationDelay: `${Math.min(i, 12) * 35}ms` }}
+          className="grid grid-cols-12 gap-2 px-4 py-3 items-center border-b border-amber-900/10 last:border-b-0 hover:bg-amber-900/10 active:bg-amber-900/15 transition-colors animate-rise-up"
         >
-          <div className="col-span-1 text-amber-200/60 font-medium">{p.pos}</div>
+          <div
+            className={cn(
+              "col-span-1 font-bold tabular-nums",
+              p.pos === 1 && "text-amber-300",
+              p.pos === 2 && "text-slate-300",
+              p.pos === 3 && "text-orange-400",
+              p.pos > 3 && "text-amber-200/60"
+            )}
+          >
+            {p.pos}
+          </div>
           <div className="col-span-5 flex items-center gap-2 min-w-0">
             <UserAvatar name={p.name} size="sm" />
             <span className="text-white font-medium truncate">{p.name}</span>

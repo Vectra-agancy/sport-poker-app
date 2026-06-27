@@ -125,7 +125,7 @@ async function main() {
 
   const me = await prisma.user.create({
     data: {
-      nickname: "LuckNear",
+      nickname: "MidnightRaise",
       tier: "silver",
       referralCode: "LUCK01",
       freeTickets: 2,
@@ -133,13 +133,13 @@ async function main() {
   });
 
   const ratingPlayers = [
-    { nickname: "V", points: 31045, bounties: 61 },
-    { nickname: "ИзЯ", points: 30414, bounties: 112 },
-    { nickname: "VagabOnd", points: 28445, bounties: 72 },
-    { nickname: "s1eepz", points: 26200, bounties: 88 },
-    { nickname: "Олег Вла", points: 23981, bounties: 110 },
-    { nickname: "SkyDiver", points: 22100, bounties: 45 },
-    { nickname: "Baber", points: 21500, bounties: 67 },
+    { nickname: "PhantomAce", points: 31045, bounties: 61 },
+    { nickname: "ChipWizard", points: 30414, bounties: 112 },
+    { nickname: "BluffKing", points: 28445, bounties: 72 },
+    { nickname: "RiverRat", points: 26200, bounties: 88 },
+    { nickname: "AllInAnna", points: 23981, bounties: 110 },
+    { nickname: "NightShark", points: 22100, bounties: 45 },
+    { nickname: "GoldenJack", points: 21500, bounties: 67 },
   ];
 
   const ratingUsers: { id: number; nickname: string }[] = [];
@@ -156,7 +156,7 @@ async function main() {
   }
 
   // Доп. участники для турниров
-  const extraNames = ["€$ LP", "Dmitry_archmeb", "Omarello57", "Feeleemon"];
+  const extraNames = ["DeuceWild", "StackMaster", "FoldMeNot", "PocketRockets"];
   const extraUsers: { id: number; nickname: string }[] = [];
   for (let i = 0; i < extraNames.length; i++) {
     const u = await prisma.user.create({
@@ -388,10 +388,19 @@ async function main() {
   console.log("→ Seeding referral progress...");
   // 7 рефералов, всего 23 attended-игры (по моку)
   // Создадим 7 реферальных юзеров и распределим игры.
+  const friendNames = [
+    "CardShark99",
+    "TiltControl",
+    "SlowRoller",
+    "CoolHandLuke",
+    "QueenOfClubs",
+    "RoyalFlushaa",
+    "DonkeyKong",
+  ];
   for (let i = 0; i < 7; i++) {
     const referee = await prisma.user.create({
       data: {
-        nickname: `friend_${i + 1}`,
+        nickname: friendNames[i],
         tier: "bronze",
         referralCode: `FR${String(i).padStart(4, "0")}`,
         referredById: me.id,
