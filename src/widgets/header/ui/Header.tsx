@@ -15,7 +15,7 @@ export function Header({ title, showBack = false, onBack }: HeaderProps) {
   const handleBack = onBack ?? (() => router.back());
   return (
     <div
-      className="px-4 pt-6 pb-4 sticky top-0 z-20"
+      className="px-4 pt-[calc(env(safe-area-inset-top)+2.5rem)] pb-4 sticky top-0 z-20"
       style={{
         background: "linear-gradient(180deg, #1a0a0c 70%, transparent 100%)",
       }}
