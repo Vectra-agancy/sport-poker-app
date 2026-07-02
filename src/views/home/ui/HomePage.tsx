@@ -18,6 +18,18 @@ const DAY_SHORT: Record<number, string> = {
   6: "Сб",
 };
 
+// Клуб живёт по Санкт-Петербургу (UTC+3)
+const CLUB_UTC_OFFSET_HOURS = 3;
+
+function greetingByHour(): string {
+  const hour =
+    (new Date().getUTCHours() + CLUB_UTC_OFFSET_HOURS + 24) % 24;
+  if (hour >= 5 && hour < 12) return "Доброе утро";
+  if (hour >= 12 && hour < 18) return "Добрый день";
+  if (hour >= 18 && hour < 23) return "Добрый вечер";
+  return "Доброй ночи";
+}
+
 function formatRegistrationLine(reg: MyRegistrationSummary): string {
   const d = reg.startsAt;
   return `${DAY_SHORT[d.getUTCDay()]}, ${String(d.getUTCDate()).padStart(2, "0")}.${String(
@@ -28,6 +40,7 @@ function formatRegistrationLine(reg: MyRegistrationSummary): string {
 }
 
 export interface HomePageProps {
+  nickname: string | null;
   upcomingTournaments: Tournament[];
   myRegistrations: MyRegistrationSummary[];
   topRating: RatingRow[];
@@ -36,6 +49,7 @@ export interface HomePageProps {
 }
 
 export function HomePage({
+  nickname,
   upcomingTournaments,
   myRegistrations,
   topRating,
@@ -46,39 +60,81 @@ export function HomePage({
     <div className="pb-28">
       <Header />
       <div className="px-4 space-y-6">
+        <section className="animate-rise-up">
+          <h1 className="text-2xl font-bold text-white">
+            {greetingByHour()}
+            {nickname ? (
+              <>
+                ,{" "}
+                <span className="bg-gradient-to-r from-amber-200 to-amber-400 bg-clip-text text-transparent">
+                  {nickname}
+                </span>
+              </>
+            ) : null}
+            !
+          </h1>
+          <p className="text-sm text-amber-200/60 mt-1">
+            {nickname
+              ? "За столами уже тасуют — посмотрим, что сегодня в клубе."
+              : "Добро пожаловать в спортивный покерный клуб RERAISE."}
+          </p>
+        </section>
+
         {myRegistrations.length > 0 && (
-          <section className="animate-rise-up" style={{ animationDelay: "0ms" }}>
+          <section className="animate-rise-up" style={{ animationDelay: "40ms" }}>
             <div className="flex items-center gap-2 mb-3">
               <div className="w-1 h-5 bg-amber-500 rounded-full" />
               <h2 className="text-white font-bold text-lg">Мои записи</h2>
             </div>
             <div className="space-y-2">
-              {myRegistrations.map((r) => (
-                <div
-                  key={r.tournamentId}
-                  className="rounded-2xl bg-gradient-to-br from-amber-900/20 to-rose-900/20 border border-amber-700/30 p-4"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-amber-200 font-bold">{r.name}</div>
-                      <div className="text-xs text-amber-200/60 mt-0.5">
-                        {formatRegistrationLine(r)}
+              {myRegistrations.map((r) => {
+                const waitlist = r.status === "waitlist";
+                return (
+                  <Link
+                    key={r.tournamentId}
+                    href={`/tournament/${r.tournamentId}`}
+                    className="block rounded-2xl bg-gradient-to-br from-amber-900/20 to-rose-900/20 border border-amber-700/30 p-4 press hover:border-amber-500/40"
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="text-amber-200 font-bold truncate">
+                          {r.name}
+                        </div>
+                        <div className="text-xs text-amber-200/60 mt-0.5">
+                          {formatRegistrationLine(r)}
+                        </div>
+                      </div>
+                      <div
+                        className={
+                          waitlist
+                            ? "px-3 py-1.5 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-medium whitespace-nowrap"
+                            : "px-3 py-1.5 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-medium whitespace-nowrap"
+                        }
+                      >
+                        {waitlist ? "Лист ожидания" : "Записан"}
                       </div>
                     </div>
-                    <div className="px-3 py-1.5 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-medium">
-                      Записан
-                    </div>
-                  </div>
-                </div>
-              ))}
+                  </Link>
+                );
+              })}
             </div>
           </section>
         )}
 
-        <section className="animate-rise-up" style={{ animationDelay: "70ms" }}>
-          <div className="flex items-center gap-2 mb-3">
-            <Trophy className="w-5 h-5 text-amber-400" />
-            <h2 className="text-white font-bold text-lg">Ближайшие турниры</h2>
+        <section className="animate-rise-up" style={{ animationDelay: "80ms" }}>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Trophy className="w-5 h-5 text-amber-400" />
+              <h2 className="text-white font-bold text-lg">
+                Ближайшие турниры
+              </h2>
+            </div>
+            <Link
+              href="/calendar"
+              className="text-sm text-amber-300/90 hover:text-amber-200 transition"
+            >
+              Все →
+            </Link>
           </div>
           {upcomingTournaments.length > 0 ? (
             <TournamentList tournaments={upcomingTournaments} />
@@ -97,7 +153,7 @@ export function HomePage({
           ) : (
             <Link
               href="/rating"
-              className="block rounded-2xl bg-burgundy-800/60 border border-amber-900/20 p-6 text-center text-amber-200/60 text-sm hover:border-amber-600/40 transition"
+              className="block rounded-2xl bg-burgundy-800/60 border border-amber-900/20 p-6 text-center text-amber-200/60 text-sm press hover:border-amber-600/40"
             >
               Подпишитесь на игроков в рейтинге, чтобы видеть их активность →
             </Link>
@@ -105,16 +161,26 @@ export function HomePage({
         </section>
 
         {topRating.length >= 3 && (
-          <section className="animate-rise-up" style={{ animationDelay: "210ms" }}>
-            <div className="flex items-center gap-2 mb-3">
-              <Crown className="w-5 h-5 text-amber-400" />
-              <h2 className="text-white font-bold text-lg">Топ рейтинга</h2>
+          <section className="animate-rise-up" style={{ animationDelay: "200ms" }}>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Crown className="w-5 h-5 text-amber-400" />
+                <h2 className="text-white font-bold text-lg">Топ рейтинга</h2>
+              </div>
+              <Link
+                href="/rating"
+                className="text-sm text-amber-300/90 hover:text-amber-200 transition"
+              >
+                Весь рейтинг →
+              </Link>
             </div>
-            <RatingPodium top3={topRating.slice(0, 3)} variant="compact" />
+            <Link href="/rating" className="block press">
+              <RatingPodium top3={topRating.slice(0, 3)} variant="compact" />
+            </Link>
           </section>
         )}
 
-        <section className="animate-rise-up" style={{ animationDelay: "280ms" }}>
+        <section className="animate-rise-up" style={{ animationDelay: "260ms" }}>
           <div className="flex items-center gap-2 mb-3">
             <TrendingUp className="w-5 h-5 text-amber-400" />
             <h2 className="text-white font-bold text-lg">Клуб в цифрах</h2>

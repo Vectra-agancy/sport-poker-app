@@ -47,8 +47,8 @@ export function BottomNav() {
   const activePath = pendingHref ?? pathname;
 
   return (
-    <div className="fixed bottom-3 left-0 right-0 px-4 z-40 max-w-md mx-auto">
-      <div className="rounded-2xl bg-burgundy-900/95 backdrop-blur-lg border border-amber-900/30 p-1.5 flex shadow-2xl">
+    <div className="fixed bottom-[calc(env(safe-area-inset-bottom)+0.75rem)] left-0 right-0 px-4 z-40 max-w-md mx-auto">
+      <div className="rounded-2xl bg-burgundy-900/95 backdrop-blur-lg border border-amber-900/30 p-1.5 flex shadow-2xl shadow-black/50">
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon;
           const active = item.match(activePath);
@@ -68,22 +68,27 @@ export function BottomNav() {
                 startTransition(() => router.push(item.href));
               }}
               className={cn(
-                "flex-1 py-2.5 rounded-xl flex flex-col items-center gap-0.5 transition-colors duration-150 active:scale-[0.96]",
+                "relative flex-1 py-2.5 rounded-xl flex flex-col items-center gap-0.5 transition-colors duration-150 active:scale-[0.94]",
                 active
-                  ? "bg-gradient-to-br from-amber-700/60 to-amber-900/60"
+                  ? "bg-gradient-to-br from-amber-700/60 to-amber-900/60 shadow-inner shadow-amber-950/40"
                   : ""
               )}
             >
+              {active && (
+                <span className="pointer-events-none absolute -top-px left-1/2 h-px w-8 -translate-x-1/2 rounded-full bg-gradient-to-r from-transparent via-amber-300/80 to-transparent" />
+              )}
               <Icon
                 className={cn(
-                  "w-5 h-5 transition-opacity",
-                  active ? "text-amber-200" : "text-amber-200/40",
+                  "w-5 h-5 transition-all duration-200",
+                  active
+                    ? "text-amber-200 animate-pop-in drop-shadow-[0_0_6px_rgba(251,191,36,0.35)]"
+                    : "text-amber-200/40",
                   showSpinner && "animate-pulse"
                 )}
               />
               <span
                 className={cn(
-                  "text-[10px] font-medium",
+                  "text-[10px] font-medium transition-colors duration-150",
                   active ? "text-amber-200" : "text-amber-200/40"
                 )}
               >

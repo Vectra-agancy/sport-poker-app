@@ -2,7 +2,7 @@ import { Header } from "@/widgets/header";
 import { AchievementsGrid } from "@/widgets/achievements-grid";
 import { FollowButton } from "@/features/follow-user";
 import type { Achievement } from "@/entities/achievement";
-import { TIER_LABELS, UserAvatar } from "@/entities/user";
+import { TierBadge, UserAvatar } from "@/entities/user";
 import type { PublicUserProfile } from "@/entities/user/server";
 
 export interface PublicProfilePageProps {
@@ -21,17 +21,20 @@ export function PublicProfilePage({
     <div className="pb-28">
       <Header title="Профиль" showBack />
       <div className="px-4 space-y-4">
-        <div className="rounded-2xl bg-gradient-to-br from-burgundy-700 to-burgundy-800 border border-amber-900/30 p-5">
+        <div className="rounded-2xl bg-gradient-to-br from-burgundy-700 to-burgundy-800 border border-amber-900/30 p-5 animate-rise-up">
           <div className="flex items-center gap-4 mb-5">
             <UserAvatar name={user.nickname} size="xl" />
             <div className="flex-1 min-w-0">
               <div className="text-white font-bold text-xl truncate">
                 {user.nickname}
               </div>
-              <div className="text-amber-200/60 text-sm">
-                {TIER_LABELS[user.tier]}
-                {user.ratingPosition > 0 &&
-                  ` • #${user.ratingPosition} в рейтинге`}
+              <div className="flex items-center gap-2 mt-1.5">
+                <TierBadge tier={user.tier} />
+                {user.ratingPosition > 0 && (
+                  <span className="text-amber-200/60 text-sm">
+                    #{user.ratingPosition} в рейтинге
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -55,7 +58,9 @@ export function PublicProfilePage({
                 key={s.label}
                 className="rounded-xl bg-burgundy-900/60 border border-amber-900/20 p-3 text-center"
               >
-                <div className="text-white font-bold text-xl">{s.value}</div>
+                <div className="text-white font-bold text-xl tabular-nums">
+                  {s.value}
+                </div>
                 <div className="text-xs text-amber-200/50 uppercase tracking-wider mt-0.5">
                   {s.label}
                 </div>
@@ -75,13 +80,17 @@ export function PublicProfilePage({
                 className="flex items-center justify-between rounded-xl bg-burgundy-900/40 border border-amber-900/10 px-3 py-2"
               >
                 <span className="text-amber-200/60 text-xs">{s.label}</span>
-                <span className="text-white font-bold">{s.value}</span>
+                <span className="text-white font-bold tabular-nums">
+                  {s.value}
+                </span>
               </div>
             ))}
           </div>
         </div>
 
-        <AchievementsGrid achievements={achievements} />
+        <div className="animate-rise-up" style={{ animationDelay: "80ms" }}>
+          <AchievementsGrid achievements={achievements} />
+        </div>
       </div>
     </div>
   );

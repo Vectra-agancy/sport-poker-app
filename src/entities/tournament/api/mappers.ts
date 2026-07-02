@@ -20,13 +20,28 @@ const DAY_NAMES = [
   "Суббота",
 ];
 
+const MONTH_GENITIVE = [
+  "января",
+  "февраля",
+  "марта",
+  "апреля",
+  "мая",
+  "июня",
+  "июля",
+  "августа",
+  "сентября",
+  "октября",
+  "ноября",
+  "декабря",
+];
+
 function pad(n: number) {
   return n.toString().padStart(2, "0");
 }
 
 function formatDate(d: Date): string {
   // Use UTC components to keep deterministic across runtime timezones
-  return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`;
+  return `${d.getUTCDate()} ${MONTH_GENITIVE[d.getUTCMonth()]}`;
 }
 
 function formatTime(d: Date): string {
@@ -43,12 +58,16 @@ export function tournamentFromDb(row: TournamentDbRow): Tournament {
     id: row.id,
     name: row.name,
     type: row.type as TournamentType,
+    status: row.status,
     seats: row._count.registrations,
     maxSeats: row.maxSeats,
     time: formatTime(row.startsAt),
     date: formatDate(row.startsAt),
     day: DAY_NAMES[row.startsAt.getUTCDay()],
+    startsAtIso: row.startsAt.toISOString(),
     season: row.season?.name ?? "",
+    location: row.location,
+    format: row.format,
     stack: row.startStack,
     ticket: row.ticketPrice,
     guarantee: row.guarantee ?? undefined,

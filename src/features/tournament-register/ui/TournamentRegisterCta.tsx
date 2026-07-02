@@ -75,7 +75,7 @@ export function TournamentRegisterCta({
   }
 
   return (
-    <div className="fixed bottom-24 left-0 right-0 px-4 z-30 max-w-md mx-auto space-y-2">
+    <div className="fixed bottom-[calc(env(safe-area-inset-bottom)+6rem)] left-0 right-0 px-4 z-30 max-w-md mx-auto space-y-2">
       {error && (
         <div className="rounded-xl border border-rose-700/40 bg-rose-900/40 px-4 py-2 text-rose-100 text-sm text-center">
           {error}

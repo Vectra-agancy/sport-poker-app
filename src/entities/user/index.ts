@@ -2,3 +2,4 @@
 export type { User, CurrentUser, Tier } from "./model/types";
 export { TIER_LABELS } from "./model/labels";
 export { UserAvatar } from "./ui/UserAvatar";
+export { TierBadge } from "./ui/TierBadge";

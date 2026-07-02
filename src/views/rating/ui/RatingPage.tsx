@@ -17,11 +17,16 @@ export function RatingPage({ rows, activeScope, myPosition }: RatingPageProps) {
         <RatingScopeTabs initialScope={activeScope} initialRows={rows} />
 
         {rows.length >= 3 && (
-          <RatingPodium top3={rows.slice(0, 3)} variant="podium" />
+          <div className="animate-rise-up">
+            <RatingPodium top3={rows.slice(0, 3)} variant="podium" />
+          </div>
         )}
 
         {myPosition && (
-          <div className="rounded-2xl bg-gradient-to-r from-amber-900/30 to-amber-950/30 border border-amber-600/30 p-4">
+          <div
+            className="rounded-2xl bg-gradient-to-r from-amber-900/30 to-amber-950/30 border border-amber-600/30 p-4 animate-rise-up"
+            style={{ animationDelay: "100ms" }}
+          >
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-xs text-amber-200/60 uppercase tracking-wider mb-1">

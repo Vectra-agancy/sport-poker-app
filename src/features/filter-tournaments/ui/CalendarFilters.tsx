@@ -1,37 +1,35 @@
 "use client";
 
-import { useState } from "react";
-import { ChevronDown, Layers } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui";
-import { TOURNAMENT_TYPES } from "@/entities/tournament";
+import { cn } from "@/shared/lib/utils";
+import { TOURNAMENT_TYPES, type TournamentType } from "@/entities/tournament";
 
-export type CalendarFilter = "all" | "upcoming" | "past";
+export type CalendarFilter = "upcoming" | "past" | "all";
 
 export interface CalendarFiltersProps {
-  initialFilter?: CalendarFilter;
-  onFilterChange?: (f: CalendarFilter) => void;
+  filter: CalendarFilter;
+  onFilterChange: (f: CalendarFilter) => void;
+  activeTypes: TournamentType[];
+  onToggleType: (t: TournamentType) => void;
 }
 
 const FILTERS: { id: CalendarFilter; label: string }[] = [
-  { id: "all", label: "Все" },
   { id: "upcoming", label: "Предстоящие" },
   { id: "past", label: "Прошедшие" },
+  { id: "all", label: "Все" },
 ];
 
 export function CalendarFilters({
-  initialFilter = "all",
+  filter,
   onFilterChange,
+  activeTypes,
+  onToggleType,
 }: CalendarFiltersProps) {
-  const [filter, setFilter] = useState<CalendarFilter>(initialFilter);
-
   return (
     <div className="space-y-3">
       <Tabs
         value={filter}
-        onValueChange={(v) => {
-          setFilter(v as CalendarFilter);
-          onFilterChange?.(v as CalendarFilter);
-        }}
+        onValueChange={(v) => onFilterChange(v as CalendarFilter)}
       >
         <TabsList>
           {FILTERS.map((f) => (
@@ -43,27 +41,31 @@ export function CalendarFilters({
       </Tabs>
 
       <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-none">
-        {Object.entries(TOURNAMENT_TYPES).map(([key, t]) => (
-          <button
-            key={key}
-            type="button"
-            className={`px-3 py-1.5 rounded-full text-xs font-medium border whitespace-nowrap ${t.className}`}
-          >
-            {t.label}
-          </button>
-        ))}
+        {(
+          Object.entries(TOURNAMENT_TYPES) as [
+            TournamentType,
+            (typeof TOURNAMENT_TYPES)[TournamentType],
+          ][]
+        ).map(([key, t]) => {
+          const active = activeTypes.includes(key);
+          return (
+            <button
+              key={key}
+              type="button"
+              onClick={() => onToggleType(key)}
+              aria-pressed={active}
+              className={cn(
+                "px-3 py-1.5 rounded-full text-xs font-medium border whitespace-nowrap press",
+                active
+                  ? t.className
+                  : "border-amber-900/30 text-amber-200/40 hover:text-amber-200/70"
+              )}
+            >
+              {t.label}
+            </button>
+          );
+        })}
       </div>
-
-      <button
-        type="button"
-        className="w-full rounded-2xl bg-burgundy-800/80 border border-amber-900/20 p-3.5 flex items-center justify-between active:scale-[0.99] transition"
-      >
-        <div className="flex items-center gap-2">
-          <Layers className="w-5 h-5 text-amber-400" />
-          <span className="text-white font-medium">Майский сезон</span>
-        </div>
-        <ChevronDown className="w-5 h-5 text-amber-400" />
-      </button>
     </div>
   );
 }

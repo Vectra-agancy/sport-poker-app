@@ -31,6 +31,7 @@ export default async function Page() {
   return (
     <>
       <HomePage
+        nickname={sessionUser?.nickname ?? null}
         upcomingTournaments={upcomingTournaments}
         myRegistrations={myRegistrations}
         topRating={topRating}
