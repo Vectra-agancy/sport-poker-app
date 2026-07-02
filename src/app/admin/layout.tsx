@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/shared/lib/auth-helpers";
+import { AdminNav } from "./admin-nav";
 
 export const metadata: Metadata = {
   title: "Админка",
@@ -36,20 +37,7 @@ export default async function AdminLayout({
             К приложению →
           </Link>
         </div>
-        <nav className="mt-4 flex gap-4 text-sm">
-          <Link
-            href="/admin"
-            className="text-amber-100/80 hover:text-amber-200"
-          >
-            Дашборд
-          </Link>
-          <Link
-            href="/admin/tournaments/new"
-            className="text-amber-100/80 hover:text-amber-200"
-          >
-            + Турнир
-          </Link>
-        </nav>
+        <AdminNav />
       </header>
       <main className="px-4 pt-4">{children}</main>
     </div>

@@ -28,3 +28,5 @@ export {
   DialogDescription,
 } from "./dialog";
 export { Logo } from "./logo";
+export { NativeSelect } from "./native-select";
+export type { NativeSelectOption } from "./native-select";

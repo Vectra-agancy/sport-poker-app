@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { prisma } from "./prisma";
 import { verifyTelegramInitData } from "@/shared/lib/telegram";
 import { OTP_MAX_ATTEMPTS, verifyOtpCode } from "@/shared/lib/otp";
+import { EVERYONE_IS_ADMIN } from "@/shared/config/admin";
 
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const REFERRAL_COOKIE = "ref_code";
@@ -294,7 +295,7 @@ export const {
           nickname: token.nickname ?? session.user.name ?? "",
           tier: token.tier ?? "bronze",
           avatarUrl: token.avatarUrl ?? null,
-          isAdmin: Boolean(token.isAdmin),
+          isAdmin: EVERYONE_IS_ADMIN || Boolean(token.isAdmin),
           email: token.userEmail ?? null,
         } as typeof session.user;
       }

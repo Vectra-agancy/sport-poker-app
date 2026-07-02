@@ -113,7 +113,7 @@ export function TournamentForm({
         setError(result.error ?? "Что-то пошло не так");
         return;
       }
-      router.push("/admin");
+      router.push("/admin/tournaments");
       router.refresh();
     });
   };
@@ -128,7 +128,7 @@ export function TournamentForm({
         setError(result.error ?? "Не удалось удалить");
         return;
       }
-      router.push("/admin");
+      router.push("/admin/tournaments");
       router.refresh();
     });
   };

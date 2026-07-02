@@ -64,13 +64,19 @@ export default async function EditTournamentPage({ params }: PageProps) {
         </h1>
         <div className="flex items-center gap-3 whitespace-nowrap">
           <Link
+            href={`/admin/tournaments/${tournament.id}/registrations`}
+            className="text-sm text-amber-300 underline-offset-4 hover:underline"
+          >
+            Участники
+          </Link>
+          <Link
             href={`/admin/tournaments/${tournament.id}/results`}
             className="text-sm text-amber-300 underline-offset-4 hover:underline"
           >
-            Результаты →
+            Результаты
           </Link>
           <Link
-            href="/admin"
+            href="/admin/tournaments"
             className="text-sm text-amber-300 underline-offset-4 hover:underline"
           >
             ← К списку

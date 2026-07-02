@@ -13,7 +13,7 @@ export default async function NewTournamentPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-white font-bold text-xl">Новый турнир</h1>
         <Link
-          href="/admin"
+          href="/admin/tournaments"
           className="text-sm text-amber-300 underline-offset-4 hover:underline"
         >
           ← К списку
